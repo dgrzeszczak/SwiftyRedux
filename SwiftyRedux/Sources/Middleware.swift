@@ -7,26 +7,27 @@
 //
 
 public protocol AnyMiddleware {
-    func apply<Action: StoreAction>(with dispatcher: Dispatcher<Action>, storeState: Any)
+    func applyMiddleware<Action: StoreAction>(with actionParam: Action.ParamType, dispatcher: Dispatcher<Action>, storeState: Any)
 }
 
 public protocol Middleware: AnyMiddleware {
     associatedtype Action: StoreAction
     associatedtype State: StoreState
-    func apply(with dispatcher: Dispatcher<Action>, storeState: State)
+    func applyMiddleware(with actionParam: Action.ParamType, dispatcher: Dispatcher<Action>, storeState: State)
 }
 
 extension AnyMiddleware where Self: Middleware {
-    public func apply<Action: StoreAction>(with dispatcher: Dispatcher<Action>, storeState: Any) {
+    public func applyMiddleware<Action: StoreAction>(with actionParam: Action.ParamType, dispatcher: Dispatcher<Action>, storeState: Any) {
         guard Action.self == Self.Action.self,
             let state = storeState as? State,
+            let param = actionParam as? Self.Action.ParamType,
             let dis = dispatcher as? Dispatcher<Self.Action>
         else {
             dispatcher.next()
             return
         }
 
-        apply(with: dis, storeState: state)
+        applyMiddleware(with: param, dispatcher: dis, storeState: state)
     }
 }
 
@@ -44,7 +45,7 @@ public struct Dispatcher<Action: StoreAction> {
     let getState: () -> Any
     let reduce: () -> Void
 
-    public let param: Action.ParamType
+    let param: Action.ParamType
 
     public func dispatch<Action: StoreAction>(action: Action) {
         dispatcher?.dispatch(action: action)
@@ -68,7 +69,7 @@ public struct Dispatcher<Action: StoreAction> {
                                 getState: getState,
                                 reduce: reduce,
                                 param: param)
-        first.apply(with: dispatch, storeState: getState())
+        first.applyMiddleware(with: param, dispatcher: dispatch, storeState: getState())
     }
 
     private func compose(completion1: ((Any) -> Void)?, completion2: ((Any) -> Void)?) -> ((Any) -> Void)? {
