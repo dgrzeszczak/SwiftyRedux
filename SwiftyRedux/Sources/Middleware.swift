@@ -52,6 +52,10 @@ public struct Dispatcher<Action: StoreAction> {
     }
 
     public func next(completion: ((Any) -> Void)? = nil) {
+        next(param: param, completion: completion)
+    }
+
+    public func next(param: Action.ParamType, completion: ((Any) -> Void)? = nil) {
 
         let compl = compose(completion1: self.completion, completion2: completion)
 
