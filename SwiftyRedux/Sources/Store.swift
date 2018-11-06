@@ -39,14 +39,9 @@ public class Store<State: StoreState> {
             strongSelf.activeSubscribers.forEach { $0.didChange(state: strongSelf.state, oldState: oldState) }
         }
 
-        let getState = { [weak self] in
-            return self?.state
-        }
-
-       Dispatcher<Action>(dispatcher: self,
+       Dispatcher<Action, State>(store: self,
                                  completion: nil,
                                  middleware: middleware,
-                                 getState: getState,
                                  reduce: reduce,
                                  param: param)
         .next()
