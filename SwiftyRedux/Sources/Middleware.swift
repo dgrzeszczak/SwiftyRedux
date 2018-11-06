@@ -7,27 +7,27 @@
 //
 
 public protocol AnyMiddleware {
-    func applyMiddleware<Action: StoreAction, State: StoreState>(with actionParam: Action.ParamType, dispatcher: Dispatcher<Action, State>, storeState: State)
+    func applyMiddleware<Action: StoreAction, State: StoreState>(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State)
 }
 
 public protocol Middleware: AnyMiddleware {
     associatedtype Action: StoreAction
     associatedtype State: StoreState
-    func applyMiddleware(with actionParam: Action.ParamType, dispatcher: Dispatcher<Action, State>, storeState: State)
+    func applyMiddleware(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State)
 }
 
 extension AnyMiddleware where Self: Middleware {
-    public func applyMiddleware<Action: StoreAction, State: StoreState>(with actionParam: Action.ParamType, dispatcher: Dispatcher<Action, State>, storeState: State) {
+    public func applyMiddleware<Action: StoreAction, State: StoreState>(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State) {
         guard Action.self == Self.Action.self,
-            let state = storeState as? Self.State,
-            let param = actionParam as? Self.Action.ParamType,
+            let state = state as? Self.State,
+            let param = param as? Self.Action.ParamType,
             let dis = dispatcher as? Dispatcher<Self.Action, Self.State>
         else {
             dispatcher.next()
             return
         }
 
-        applyMiddleware(with: param, dispatcher: dis, storeState: state)
+        applyMiddleware(with: param, dispatcher: dis, state: state)
     }
 }
 
@@ -73,7 +73,7 @@ public struct Dispatcher<Action: StoreAction, State: StoreState> {
                                 middleware: newWiddleware,
                                 reduce: reduce,
                                 param: param)
-        first.applyMiddleware(with: param, dispatcher: dispatch, storeState: store.state)
+        first.applyMiddleware(with: param, dispatcher: dispatch, state: store.state)
     }
 
     private func compose(completion1: ((State) -> Void)?, completion2: ((State) -> Void)?) -> ((State) -> Void)? {
