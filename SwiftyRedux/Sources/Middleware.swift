@@ -7,7 +7,7 @@
 //
 
 public protocol AnyMiddleware {
-    func applyMiddleware<Action: StoreAction, State: StoreState>(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State)
+    func applyAnyMiddleware<Action: StoreAction, State: StoreState>(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State)
 }
 
 public protocol Middleware: AnyMiddleware {
@@ -17,7 +17,7 @@ public protocol Middleware: AnyMiddleware {
 }
 
 extension AnyMiddleware where Self: Middleware {
-    public func applyMiddleware<Action: StoreAction, State: StoreState>(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State) {
+    public func applyAnyMiddleware<Action: StoreAction, State: StoreState>(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State) {
         guard Action.self == Self.Action.self,
             let state = state as? Self.State,
             let param = param as? Self.Action.ParamType,
@@ -73,7 +73,7 @@ public struct Dispatcher<Action: StoreAction, State: StoreState> {
                                 middleware: newWiddleware,
                                 reduce: reduce,
                                 param: param)
-        first.applyMiddleware(with: param, dispatcher: dispatch, state: store.state)
+        first.applyAnyMiddleware(with: param, dispatcher: dispatch, state: store.state)
     }
 
     private func compose(completion1: ((State) -> Void)?, completion2: ((State) -> Void)?) -> ((State) -> Void)? {
