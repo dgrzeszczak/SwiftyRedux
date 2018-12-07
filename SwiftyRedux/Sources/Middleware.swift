@@ -7,13 +7,15 @@
 //
 
 public protocol AnyMiddleware {
-    func applyAnyMiddleware<Action: StoreAction, State: StoreState>(with action: Action, dispatcher: Dispatcher<Action, State>, state: State)
+    func applyAnyMiddleware<State: StoreState, Action: StoreAction>(for state: State,
+                                                                    action: Action,
+                                                                    dispatcher: Dispatcher<Action, State>)
 }
 
 public protocol Middleware: AnyMiddleware {
     associatedtype Action: StoreAction
     associatedtype State: StoreState
-    func applyMiddleware(with action: Action, dispatcher: Dispatcher<Action, State>, state: State)
+    func applyMiddleware(for state: State, action: Action, dispatcher: Dispatcher<Action, State>)
 }
 
 extension AnyMiddleware where Self: Middleware {
@@ -28,7 +30,7 @@ extension AnyMiddleware where Self: Middleware {
             return
         }
 
-        applyMiddleware(with: action, dispatcher: dis, state: state)
+        applyAnyMiddleware(for: state, action: action, dispatcher: dis)
     }
 }
 
@@ -74,7 +76,7 @@ public struct Dispatcher<Action: StoreAction, State: StoreState> {
                                 middleware: newWiddleware,
                                 reduce: reduce,
                                 action: action)
-        first.applyAnyMiddleware(with: action, dispatcher: dispatch, state: store.state)
+        first.applyAnyMiddleware(for: store.state, action: action, dispatcher: dispatch)
     }
 
     private func compose(completion1: ((State) -> Void)?, completion2: ((State) -> Void)?) -> ((State) -> Void)? {
