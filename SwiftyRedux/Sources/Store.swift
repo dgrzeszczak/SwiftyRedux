@@ -25,17 +25,17 @@ public class Store<State: StoreState> {
 
     public func register<R: Reducer>(reducer: R.Type) where State == R.State {
         actionDispatcher.register(action: reducer.Action.self) { [weak self] in
-            self?.dispatch(param: $0, with: reducer)
+            self?.dispatch(action: $0, with: reducer)
         }
     }
 
-    private func dispatch<Action, R: Reducer>(param: Action.ParamType, with reducer: R.Type) where R.Action == Action, State == R.State {
+    private func dispatch<Action, R: Reducer>(action: Action, with reducer: R.Type) where R.Action == Action, State == R.State {
 
         let reduce = { [weak self] in
             guard let strongSelf = self else { return }
             let oldState = strongSelf.state
             strongSelf.activeSubscribers.forEach { $0.willChange(state: oldState) }
-            strongSelf.state = reducer.reduce(state: oldState, with: param)
+            strongSelf.state = reducer.reduce(state: oldState, with: action)
             strongSelf.activeSubscribers.forEach { $0.didChange(state: strongSelf.state, oldState: oldState) }
         }
 
@@ -43,7 +43,7 @@ public class Store<State: StoreState> {
                                  completion: nil,
                                  middleware: middleware,
                                  reduce: reduce,
-                                 param: param)
+                                 action: action)
         .next()
     }
 

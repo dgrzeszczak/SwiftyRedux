@@ -7,27 +7,30 @@
 //
 
 public protocol AnyMiddleware {
-    func applyAnyMiddleware<Action: StoreAction, State: StoreState>(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State)
+    func applyAnyMiddleware<State: StoreState, Action: StoreAction>(for state: State,
+                                                                    action: Action,
+                                                                    dispatcher: Dispatcher<Action, State>)
 }
 
 public protocol Middleware: AnyMiddleware {
     associatedtype Action: StoreAction
     associatedtype State: StoreState
-    func applyMiddleware(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State)
+    func applyMiddleware(for state: State, action: Action, dispatcher: Dispatcher<Action, State>)
 }
 
 extension AnyMiddleware where Self: Middleware {
-    public func applyAnyMiddleware<Action: StoreAction, State: StoreState>(with param: Action.ParamType, dispatcher: Dispatcher<Action, State>, state: State) {
+    public func applyAnyMiddleware<Action: StoreAction, State: StoreState>(with action: Action,
+                                                                           dispatcher: Dispatcher<Action, State>, state: State) {
         guard Action.self == Self.Action.self,
             let state = state as? Self.State,
-            let param = param as? Self.Action.ParamType,
+            let action = action as? Self.Action,
             let dis = dispatcher as? Dispatcher<Self.Action, Self.State>
         else {
             dispatcher.next()
             return
         }
 
-        applyMiddleware(with: param, dispatcher: dis, state: state)
+        applyAnyMiddleware(for: state, action: action, dispatcher: dis)
     }
 }
 
@@ -44,17 +47,17 @@ public struct Dispatcher<Action: StoreAction, State: StoreState> {
     let middleware: [AnyMiddleware]
     let reduce: () -> Void
 
-    let param: Action.ParamType
+    let action: Action
 
     public func dispatch<Action: StoreAction>(action: Action) {
         store?.dispatch(action: action)
     }
 
     public func next(completion: ((State) -> Void)? = nil) {
-        next(param: param, completion: completion)
+        next(action: action, completion: completion)
     }
 
-    public func next(param: Action.ParamType, completion: ((State) -> Void)? = nil) {
+    public func next(action: Action, completion: ((State) -> Void)? = nil) {
 
         guard let store = store else { return } // store dealocated no need to do
 
@@ -72,8 +75,8 @@ public struct Dispatcher<Action: StoreAction, State: StoreState> {
                                 completion: compl,
                                 middleware: newWiddleware,
                                 reduce: reduce,
-                                param: param)
-        first.applyAnyMiddleware(with: param, dispatcher: dispatch, state: store.state)
+                                action: action)
+        first.applyAnyMiddleware(for: store.state, action: action, dispatcher: dispatch)
     }
 
     private func compose(completion1: ((State) -> Void)?, completion2: ((State) -> Void)?) -> ((State) -> Void)? {
