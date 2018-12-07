@@ -19,8 +19,9 @@ public protocol Middleware: AnyMiddleware {
 }
 
 extension AnyMiddleware where Self: Middleware {
-    public func applyAnyMiddleware<Action: StoreAction, State: StoreState>(with action: Action,
-                                                                           dispatcher: Dispatcher<Action, State>, state: State) {
+    public func applyAnyMiddleware<State: StoreState, Action: StoreAction>(for state: State,
+                                                                           action: Action,
+                                                                           dispatcher: Dispatcher<Action, State>) {
         guard Action.self == Self.Action.self,
             let state = state as? Self.State,
             let action = action as? Self.Action,
