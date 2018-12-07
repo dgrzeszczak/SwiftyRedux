@@ -22,8 +22,7 @@ extension AnyMiddleware where Self: Middleware {
     public func applyAnyMiddleware<State: StoreState, Action: StoreAction>(for state: State,
                                                                            action: Action,
                                                                            dispatcher: Dispatcher<Action, State>) {
-        guard Action.self == Self.Action.self,
-            let state = state as? Self.State,
+        guard let state = state as? Self.State,
             let action = action as? Self.Action,
             let dis = dispatcher as? Dispatcher<Self.Action, Self.State>
         else {
@@ -31,7 +30,7 @@ extension AnyMiddleware where Self: Middleware {
             return
         }
 
-        applyAnyMiddleware(for: state, action: action, dispatcher: dis)
+        applyMiddleware(for: state, action: action, dispatcher: dis)
     }
 }
 
