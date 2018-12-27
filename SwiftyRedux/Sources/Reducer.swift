@@ -12,3 +12,10 @@ public protocol Reducer {
 
     static func reduce(state: State, with action: Action) -> State
 }
+
+public struct EmptyReducer<Action: StoreAction, State: StoreState>: Reducer {
+
+    public static func reduce(state: State, with action: Action) -> State {
+        return state
+    }
+}

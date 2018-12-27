@@ -34,13 +34,7 @@ extension AnyMiddleware where Self: Middleware {
     }
 }
 
-//protocol StoreActionDispatcher: class {
-//    func dispatch<Action: StoreAction>(action: Action)
-//}
-//
-//extension Store: StoreActionDispatcher { }
-
-public struct Dispatcher<Action: StoreAction, State: StoreState> {
+public struct Dispatcher<Action: StoreAction, State: StoreState>: StoreActionDispatcher {
 
     weak var store: Store<State>?
     let completion: ((State) -> Void)?

@@ -9,3 +9,5 @@
 import Actions
 
 public protocol StoreAction: Actions.Action where ReturnType == Void { }
+
+typealias Routable = Actions.Routable

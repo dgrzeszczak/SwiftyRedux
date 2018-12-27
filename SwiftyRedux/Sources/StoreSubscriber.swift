@@ -20,30 +20,32 @@ public extension StoreSubscriber {
     public func didChange(state: State, oldState: State) { }
 }
 
-class AnyWeakStoreSubscriber<State>: StoreSubscriber where State: StoreState {
+class AnyWeakStoreSubscriber: StoreSubscriber {
 
-    private var _willChange: ((_ state: State) -> Void)!
-    private var _didChange: ((_ state: State, _ oldState: State) -> Void)!
+    private let _willChange: ((_ state: StoreState) -> Void)
+    private let _didChange: ((_ state: StoreState, _ oldState: StoreState) -> Void)
 
-    private(set) weak var anyValue: AnyObject?
+    private(set) weak var subscriber: AnyObject?
 
-    init<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber, State == Subscriber.State {
-        anyValue = subscriber
+    init<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
+        self.subscriber = subscriber
 
         _willChange = { [weak subscriber] state in
+            guard let state = state as? Subscriber.State else { return }
             subscriber?.willChange(state: state)
         }
 
         _didChange = { [weak subscriber] state, oldState in
+            guard let state = state as? Subscriber.State, let oldState = oldState as? Subscriber.State else { return }
             subscriber?.didChange(state: state, oldState: oldState)
         }
     }
 
-    func willChange(state: State) {
+    func willChange(state: StoreState) {
         _willChange(state)
     }
 
-    func didChange(state: State, oldState: State) {
+    func didChange(state: StoreState, oldState: StoreState) {
         _didChange(state, oldState)
     }
 }

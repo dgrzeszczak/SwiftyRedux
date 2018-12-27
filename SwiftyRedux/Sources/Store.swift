@@ -11,7 +11,11 @@ import Foundation
 
 public typealias StoreState = Any
 
-public class Store<State: StoreState> {
+public protocol StoreActionDispatcher {
+    func dispatch<Action: StoreAction>(action: Action)
+}
+
+public class Store<State: StoreState>: StoreActionDispatcher {
 
     private let actionDispatcher: ActionsDispatcher
     private(set) public var state: State
@@ -48,22 +52,26 @@ public class Store<State: StoreState> {
     }
 
     public func dispatch<Action: StoreAction>(action: Action) {
-        actionDispatcher.dispatch(action: action)
+        if actionDispatcher.supports(action: action) {
+            actionDispatcher.dispatch(action: action)
+        } else {
+            dispatch(action: action, with: EmptyReducer<Action, State>.self)
+        }
     }
 
-    private var subscribers = [AnyWeakStoreSubscriber<State>]()
-    private var activeSubscribers: [AnyWeakStoreSubscriber<State>] {
-        subscribers = subscribers.filter { $0.anyValue != nil }
+    private var subscribers = [AnyWeakStoreSubscriber]()
+    private var activeSubscribers: [AnyWeakStoreSubscriber] {
+        subscribers = subscribers.filter { $0.subscriber != nil }
         return subscribers
     }
 
-    public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber, State == Subscriber.State {
-        guard !activeSubscribers.contains(where: { $0.anyValue === subscriber }) else { return }
+    public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
+        guard !activeSubscribers.contains(where: { $0.subscriber === subscriber }) else { return }
         subscribers.append(AnyWeakStoreSubscriber(subscriber: subscriber))
     }
 
-    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber, State == Subscriber.State {
-        guard let index = activeSubscribers.index(where: { $0.anyValue === subscriber }) else { return }
+    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
+        guard let index = activeSubscribers.index(where: { $0.subscriber === subscriber }) else { return }
         subscribers.remove(at: index)
     }
 }
