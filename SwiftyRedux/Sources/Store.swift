@@ -15,7 +15,20 @@ public protocol StoreActionDispatcher {
     func dispatch<Action: StoreAction>(action: Action)
 }
 
-public class Store<State: StoreState>: StoreActionDispatcher {
+public protocol AnyStore: StoreActionDispatcher {
+    var anyState: StoreState { get }
+
+    func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
+    func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
+}
+
+extension Store: AnyStore  {
+    public var anyState: StoreState {
+        return state
+    }
+}
+
+public class Store<State: StoreState> {
 
     private let actionDispatcher: ActionsDispatcher
     private(set) public var state: State
