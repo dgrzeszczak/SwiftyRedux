@@ -32,7 +32,7 @@ public class Store<State: StoreState> {
 
     private let actionDispatcher: ActionsDispatcher
     private(set) public var state: State
-    let middleware: [AnyMiddleware]
+    private var middleware: [AnyMiddleware]
 
     public init(with state: State, middleware: [AnyMiddleware] = [], routingEnabled: Bool = false) {
         actionDispatcher = ActionsDispatcher(routingEnabled: routingEnabled)
@@ -44,6 +44,10 @@ public class Store<State: StoreState> {
         actionDispatcher.register(action: reducer.Action.self) { [weak self] in
             self?.dispatch(action: $0, with: reducer)
         }
+    }
+
+    public func append(middleware: [AnyMiddleware]) {
+        self.middleware.append(contentsOf: middleware)
     }
 
     private func dispatch<Action, R: Reducer>(action: Action, with reducer: R.Type) where R.Action == Action, State == R.State {
