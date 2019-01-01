@@ -28,7 +28,7 @@ extension Store: AnyStore  {
     }
 }
 
-public class Store<State: StoreState> {
+public class Store<State: StoreState>: StoreActionDispatcher {
 
     private let actionDispatcher: ActionsDispatcher
     private(set) public var state: State
