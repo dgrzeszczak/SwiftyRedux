@@ -8,6 +8,6 @@
 
 import Actions
 
-public protocol StoreAction: Actions.Action where ReturnType == Void { }
+public typealias StoreAction = Actions.Action
 
-typealias Routable = Actions.Routable
+public typealias Routable = Actions.Routable

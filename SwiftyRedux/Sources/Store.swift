@@ -12,7 +12,7 @@ import Foundation
 public typealias StoreState = Any
 
 public protocol StoreActionDispatcher {
-    func dispatch<Action: StoreAction>(action: Action)
+    func dispatch(action: StoreAction)
 }
 
 public protocol AnyStore: StoreActionDispatcher {
@@ -60,19 +60,24 @@ public class Store<State: StoreState> {
             strongSelf.activeSubscribers.forEach { $0.didChange(state: strongSelf.state, oldState: oldState) }
         }
 
-       Dispatcher<Action, State>(store: self,
-                                 completion: nil,
-                                 middleware: middleware,
-                                 reduce: reduce,
-                                 action: action)
-        .next()
+        let dispatcher = MiddlewareDispatcher<State>(store: self,
+                                                               completion: nil,
+                                                               middleware: middleware,
+                                                               reduce: reduce)
+
+        Dispatcher<Action, State>(dispatcher: dispatcher, action: action).next()
     }
 
-    public func dispatch<Action: StoreAction>(action: Action) {
+    public func dispatch(action: StoreAction) {
         if actionDispatcher.supports(action: action) {
             actionDispatcher.dispatch(action: action)
         } else {
-            dispatch(action: action, with: EmptyReducer<Action, State>.self)
+            let dispatcher = MiddlewareDispatcher<State>(store: self,
+                                                         completion: nil,
+                                                         middleware: middleware,
+                                                         reduce: { }) // TODO ?? add anything ? 
+
+            AnyDispatcher<State>(dispatcher: dispatcher, action: action).next()
         }
     }
 
