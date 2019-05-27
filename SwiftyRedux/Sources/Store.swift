@@ -15,8 +15,10 @@ public protocol StoreActionDispatcher {
 }
 
 public protocol StoreStateSubject {
-    func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
-    func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
+    associatedtype State: StoreState
+    
+    func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber, Subscriber.State == State
+    func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber, Subscriber.State == State
 }
 
 public class Store<State: StoreState>: StoreActionDispatcher, StoreStateSubject {
@@ -51,20 +53,20 @@ public class Store<State: StoreState>: StoreActionDispatcher, StoreStateSubject 
         activeSubscribers.forEach { $0.didSet(state: state) }
     }
 
-    private var subscribers = [AnyWeakStoreSubscriber]()
-    private var activeSubscribers: [AnyWeakStoreSubscriber] {
+    private var subscribers = [AnyWeakStoreSubscriber<State>]()
+    private var activeSubscribers: [AnyWeakStoreSubscriber<State>] {
         subscribers = subscribers.filter { $0.subscriber != nil }
         return subscribers
     }
 
-    public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
+    public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber, Subscriber.State == State {
         guard !activeSubscribers.contains(where: { $0.subscriber === subscriber }) else { return }
         let anySubscriber = AnyWeakStoreSubscriber(subscriber: subscriber)
         subscribers.append(anySubscriber)
         anySubscriber.didSet(state: state)
     }
 
-    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
+    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber, Subscriber.State == State {
         guard let index = activeSubscribers.firstIndex(where: { $0.subscriber === subscriber }) else { return }
         subscribers.remove(at: index)
     }
