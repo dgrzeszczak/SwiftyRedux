@@ -33,19 +33,21 @@ class AnyWeakStoreSubscriber<State: StoreState>: StoreSubscriber {
 
     private(set) weak var subscriber: AnyObject?
 
-    init<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber, Subscriber.State == State {
+    init?<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
+        guard Subscriber.State.self == State.self else { return nil }
+
         self.subscriber = subscriber
 
         _willChange = { [weak subscriber] state in
-            subscriber?.willChange(state: state)
+            subscriber?.willChange(state: state as! Subscriber.State )
         }
 
         _didChange = { [weak subscriber] state, oldState in
-            subscriber?.didChange(state: state, oldState: oldState)
+            subscriber?.didChange(state: state as! Subscriber.State, oldState: oldState as! Subscriber.State)
         }
 
         _didSet = { [weak subscriber] state in
-            subscriber?.didSet(state: state)
+            subscriber?.didSet(state: state as! Subscriber.State)
         }
     }
 
