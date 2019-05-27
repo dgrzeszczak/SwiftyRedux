@@ -13,17 +13,23 @@ public protocol StoreSubscriber: class {
 
     func willChange(state: State)
     func didChange(state: State, oldState: State)
+
+    func didSet(state: State) // similar to didChange but also is called with initial value
 }
 
 public extension StoreSubscriber {
-    public func willChange(state: State) { }
-    public func didChange(state: State, oldState: State) { }
+    func willChange(state: State) { }
+    func didChange(state: State, oldState: State) { }
+
+    func didSet(state: State) { }
 }
 
 class AnyWeakStoreSubscriber: StoreSubscriber {
 
     private let _willChange: ((_ state: StoreState) -> Void)
     private let _didChange: ((_ state: StoreState, _ oldState: StoreState) -> Void)
+
+    private let _didSet: ((_ state: StoreState) -> Void)
 
     private(set) weak var subscriber: AnyObject?
 
@@ -39,6 +45,11 @@ class AnyWeakStoreSubscriber: StoreSubscriber {
             guard let state = state as? Subscriber.State, let oldState = oldState as? Subscriber.State else { return }
             subscriber?.didChange(state: state, oldState: oldState)
         }
+
+        _didSet = { [weak subscriber] state in
+            guard let state = state as? Subscriber.State else { return }
+            subscriber?.didSet(state: state)
+        }
     }
 
     func willChange(state: StoreState) {
@@ -47,5 +58,9 @@ class AnyWeakStoreSubscriber: StoreSubscriber {
 
     func didChange(state: StoreState, oldState: StoreState) {
         _didChange(state, oldState)
+    }
+
+    func didSet(state: Any) {
+        _didSet(state)
     }
 }
