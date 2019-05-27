@@ -29,7 +29,7 @@ public struct AnyReducer<State: StoreState> {
         }
     }
 
-    public init(reducers: [AnyReducer<State>]) {
+    public init(with reducers: [AnyReducer<State>]) {
         self.reducer = { state, action in
             return reducers.reduce(state) { state, reducer in
                 return reducer.reduce(state: state, with: action)
