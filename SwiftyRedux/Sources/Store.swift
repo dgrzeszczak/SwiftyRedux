@@ -14,13 +14,19 @@ public protocol StoreActionDispatcher {
     func dispatch(action: StoreAction)
 }
 
-public protocol StoreStateSubject {
+public protocol AnyStoreStateSubject {
 
     func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
     func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
 }
 
-public class Store<State: StoreState>: StoreActionDispatcher, StoreStateSubject {
+public protocol StoreStateSubject: AnyStoreStateSubject {
+    associatedtype State: StoreState
+
+    var state: State? { get }
+}
+
+public class Store<State: StoreState>: StoreActionDispatcher, AnyStoreStateSubject {
 
     private(set) public var state: State
     private var middleware: [AnyMiddleware]
