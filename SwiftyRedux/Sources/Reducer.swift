@@ -8,7 +8,7 @@
 
 public protocol Reducer {
     associatedtype Action: StoreAction
-    associatedtype State: StoreState
+    associatedtype State
 
     static func reduce(state: State, with action: Action) -> State
 }
@@ -17,7 +17,7 @@ extension Reducer {
     public static var any: AnyReducer<State> { return AnyReducer(reducer: self) }
 }
 
-public struct AnyReducer<State: StoreState> {
+public struct AnyReducer<State> {
 
 
     private var reducer: (_ state: State, _ action: StoreAction) -> State
