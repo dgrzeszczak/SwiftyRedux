@@ -55,7 +55,6 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStoreStateSubje
         activeSubscribers.forEach { $0.willChange(state: oldState) }
         state = reducer.reduce(state: oldState, with: action)
         activeSubscribers.forEach { $0.didChange(state: state, oldState: oldState) }
-        activeSubscribers.forEach { $0.didSet(state: state) }
     }
 
     private var subscribers = [AnyWeakStoreSubscriber<State>]()
@@ -68,7 +67,6 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStoreStateSubje
         guard !activeSubscribers.contains(where: { $0.subscriber === subscriber }) else { return }
         guard let anySubscriber = AnyWeakStoreSubscriber<State>(subscriber: subscriber) else { return }
         subscribers.append(anySubscriber)
-        anySubscriber.didSet(state: state)
     }
 
     public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
