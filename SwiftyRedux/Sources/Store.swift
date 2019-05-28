@@ -23,10 +23,10 @@ public protocol AnyStoreStateSubject {
 public protocol StoreStateSubject: AnyStoreStateSubject {
     associatedtype State: StoreState
 
-    var state: State { get }
+    var state: State? { get }
 }
 
-public class Store<State: StoreState>: StoreActionDispatcher, StoreStateSubject {
+public class Store<State: StoreState>: StoreActionDispatcher, AnyStoreStateSubject {
 
     private(set) public var state: State
     private var middleware: [AnyMiddleware]
