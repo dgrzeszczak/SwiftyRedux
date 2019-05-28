@@ -8,8 +8,6 @@
 
 import Foundation
 
-public typealias StoreState = Any
-
 public protocol StoreActionDispatcher {
     func dispatch(action: StoreAction)
 }
@@ -20,7 +18,7 @@ public protocol AnyStoreStateSubject {
     func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
 }
 
-public protocol StoreStateSubject: AnyStoreStateSubject {
+public protocol StoreStateSubject {
     associatedtype State: StoreState
 
     var state: State? { get }

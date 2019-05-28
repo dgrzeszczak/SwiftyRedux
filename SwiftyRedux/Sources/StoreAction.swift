@@ -6,5 +6,4 @@
 //  Copyright © 2018 Dariusz Grzeszczak. All rights reserved.
 //
 
-//public protocol Action { }
 public protocol StoreAction {}
