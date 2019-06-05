@@ -12,28 +12,18 @@ public protocol StoreActionDispatcher {
     func dispatch(action: StoreAction)
 }
 
-public protocol AnyStoreStateSubject {
-
-    func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
-    func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber
-}
-
-public protocol StoreStateSubject {
-    associatedtype State: StoreState
-
-    var state: State? { get }
-}
-
-public class Store<State: StoreState>: StoreActionDispatcher, AnyStoreStateSubject {
+public class Store<State: StoreState>: StoreActionDispatcher, AnyStateSubject {
 
     private(set) public var state: State
     private var middleware: [AnyMiddleware]
     private let reducer: AnyReducer<State>
+    private let subject: Subject<State>
 
-    public init(with state: State, reducer: AnyReducer<State>, middleware: [AnyMiddleware] = []) {
+    public init(with state: State, reducer: AnyReducer<State>, middleware: [AnyMiddleware] = [], stateMappers: [StoreStateMapper<State>] = []) {
         self.state = state
         self.middleware = middleware
         self.reducer = reducer
+        subject = Subject(stateMappers: stateMappers)
     }
 
     public func dispatch(action: StoreAction) {
@@ -50,10 +40,34 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStoreStateSubje
 
     private func reduce(with action: StoreAction) {
         let oldState = state
-        activeSubscribers.forEach { $0.willChange(state: oldState) }
+        subject.notifyStateWillChange(oldState: oldState)
         state = reducer.reduce(state: oldState, with: action)
-        activeSubscribers.forEach { $0.didChange(state: state, oldState: oldState) }
+        subject.notifyStateDidChange(state: state, oldState: oldState)
     }
+
+    public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber {
+        subject.add(subscriber: subscriber)
+    }
+
+    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber {
+        subject.remove(subscriber: subscriber)
+    }
+}
+
+protocol AnyStateStore {
+    var anyStateStore: StoreState { get }
+    func anyState<AnyState>() -> AnyState?
+}
+
+extension Store: AnyStateStore {
+    var anyStateStore: StoreState { return state }
+
+    func anyState<AnyState>() -> AnyState? {
+        return subject.anyState(state: state)
+    }
+}
+
+fileprivate final class Subject<State: StoreState>: AnyStateSubject {
 
     private var subscribers = [AnyWeakStoreSubscriber<State>]()
     private var activeSubscribers: [AnyWeakStoreSubscriber<State>] {
@@ -61,14 +75,44 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStoreStateSubje
         return subscribers
     }
 
-    public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
+    var mappers: [StoreStateMapper<State>]
+    init(stateMappers: [StoreStateMapper<State>] = []) {
+        stateMappers.map { $0.newStateType }.forEach { newStateType in
+            let count = stateMappers.filter { $0.newStateType == newStateType }.count
+            guard count == 1 else {
+                fatalError("More state mappers for the same type: \(newStateType)")
+            }
+        }
+        mappers = stateMappers
+    }
+
+    func anyState<AnyState>(state: State) -> AnyState? {
+        if AnyState.self == State.self { return (state as! AnyState) }
+        let anyState: AnyState? = mappers.first { $0.matches(state: AnyState.self) }?.map(state: state)
+        return anyState ?? state as? AnyState
+    }
+
+    func add<Subscriber>(subscriber: Subscriber) where Subscriber : StateSubscriber {
         guard !activeSubscribers.contains(where: { $0.subscriber === subscriber }) else { return }
-        guard let anySubscriber = AnyWeakStoreSubscriber<State>(subscriber: subscriber) else { return }
+
+        let anySubscriber = mappers
+            .first { $0.matches(state: Subscriber.State.self) }
+            .flatMap { AnyWeakStoreSubscriber<State>(subscriber: subscriber, mapper: $0) }
+            ?? AnyWeakStoreSubscriber<State>(subscriber: subscriber)
+
         subscribers.append(anySubscriber)
     }
 
-    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StoreSubscriber {
+    func remove<Subscriber>(subscriber: Subscriber) where Subscriber : StateSubscriber {
         guard let index = activeSubscribers.firstIndex(where: { $0.subscriber === subscriber }) else { return }
         subscribers.remove(at: index)
+    }
+
+    func notifyStateWillChange(oldState: State) {
+        activeSubscribers.forEach { $0.willChange(state: oldState) }
+    }
+
+    func notifyStateDidChange(state: State, oldState: State) {
+        activeSubscribers.forEach { $0.didChange(state: state, oldState: oldState) }
     }
 }
