@@ -6,28 +6,43 @@
 //  Copyright © 2018 Dariusz Grzeszczak. All rights reserved.
 //
 
+// TODO ??
+//protocol Middlewares {
+//    associatedtype Action
+//    associatedtype State
+//
+//    func next()
+//    func next(completion: @escaping (State) -> Void)
+//
+//    func next(action: StoreAction)
+//    func next(action: StoreAction, completion: @escaping (State) -> Void)
+//}
+
 public protocol AnyMiddleware {
-    func applyMiddleware<State: StoreState>(for state: State, action: StoreAction, dispatcher: AnyDispatcher<State>)
+    // TODO combine State + dispatcher = Store (find name) - change name for subjects ?
+
+    func next<State: StoreState>(for state: State, action: StoreAction, middlewares: AnyMiddlewares<State>, dispatcher: StoreActionDispatcher)
 }
 
 public protocol Middleware: AnyMiddleware {
     associatedtype Action: StoreAction
     associatedtype State: StoreState
-    func applyMiddleware(for state: State, action: Action, dispatcher: Dispatcher<Action, State>)
+
+    func next(for state: State, action: Action, middlewares: Middlewares<Action, State>, dispatcher: StoreActionDispatcher)
 }
 
 extension AnyMiddleware where Self: Middleware {
-    public func applyMiddleware<State: StoreState>(for state: State, action: StoreAction, dispatcher: AnyDispatcher<State>) {
+    public func next<State: StoreState>(for state: State, action: StoreAction, middlewares: AnyMiddlewares<State>, dispatcher: StoreActionDispatcher) {
         guard   let action = action as? Self.Action,
                 let state = state as? Self.State,
-                let middlewareDispatcher = dispatcher.dispatcher as? MiddlewareDispatcher<Self.State>
+                let middlewareDispatcher = middlewares.dispatcher as? MiddlewareDispatcher<Self.State>
         else {
-            dispatcher.next()
+            middlewares.next()
             return
         }
 
-        let dispatcher = Dispatcher<Self.Action, Self.State>(dispatcher: middlewareDispatcher, action: action)
-        applyMiddleware(for: state, action: action, dispatcher: dispatcher)
+        let middlewares = Middlewares<Self.Action, Self.State>(dispatcher: middlewareDispatcher, action: action)
+        next(for: state, action: action, middlewares: middlewares, dispatcher: dispatcher)
     }
 }
 
@@ -56,9 +71,9 @@ struct MiddlewareDispatcher<State: StoreState>: StoreActionDispatcher {
         var newWiddleware = middleware
         let first = newWiddleware.removeFirst()
         let middlewareDispatcher = MiddlewareDispatcher(store: store, completion: compl, middleware: newWiddleware, reduce: reduce)
-        let dispatcher = AnyDispatcher(dispatcher: middlewareDispatcher, action: action)
 
-        first.applyMiddleware(for: store.state, action: action, dispatcher: dispatcher)
+        let middlewares = AnyMiddlewares(dispatcher: middlewareDispatcher, action: action)
+        first.next(for: store.state, action: action, middlewares: middlewares, dispatcher: store)
     }
 
     private func compose(completion1: ((State) -> Void)?, completion2: ((State) -> Void)?) -> ((State) -> Void)? {
@@ -71,14 +86,10 @@ struct MiddlewareDispatcher<State: StoreState>: StoreActionDispatcher {
     }
 }
 
-public struct AnyDispatcher<State: StoreState>: StoreActionDispatcher {
+public struct AnyMiddlewares<State: StoreState> {
 
     let dispatcher: MiddlewareDispatcher<State>
     let action: StoreAction
-
-    public func dispatch(action: StoreAction) {
-        dispatcher.dispatch(action: action)
-    }
 
     public func next(completion: ((State) -> Void)? = nil) {
         next(action: action, completion: completion)
@@ -89,14 +100,10 @@ public struct AnyDispatcher<State: StoreState>: StoreActionDispatcher {
     }
 }
 
-public struct Dispatcher<Action: StoreAction, State: StoreState>: StoreActionDispatcher {
+public struct Middlewares<Action: StoreAction, State: StoreState> {
 
     let dispatcher: MiddlewareDispatcher<State>
     let action: Action
-
-    public func dispatch(action: StoreAction) {
-        dispatcher.dispatch(action: action)
-    }
 
     public func next(completion: ((State) -> Void)? = nil) {
         next(action: action, completion: completion)

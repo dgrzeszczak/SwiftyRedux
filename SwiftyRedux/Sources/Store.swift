@@ -35,7 +35,7 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStateSubject {
                                                         self?.reduce(with: action)
                                                      })
 
-        AnyDispatcher<State>(dispatcher: dispatcher, action: action).next()
+        AnyMiddlewares<State>(dispatcher: dispatcher, action: action).next()
     }
 
     private func reduce(with action: StoreAction) {
