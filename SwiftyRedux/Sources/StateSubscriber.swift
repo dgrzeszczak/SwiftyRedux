@@ -23,16 +23,16 @@ public extension StateSubscriber {
     func didChange(state: State, oldState: State) { }
 }
 
-public protocol AnyStateSubject {
+public protocol StateSubject {
 
     func add<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber
     func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber
 }
 
-public protocol StateSubject: AnyStateSubject {
+public protocol StateContainer {
     associatedtype State
 
-    var state: State? { get }
+    var state: State { get }
 }
 
 class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {

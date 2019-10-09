@@ -18,21 +18,57 @@
 //    func next(action: StoreAction, completion: @escaping (State) -> Void)
 //}
 
+
+//public protocol MidDisp {
+//    associatedtype Action: StoreAction
+//    associatedtype State: StoreState
+//
+//    func next(action: Action?, completion: ((State) -> Void)?)
+//}
+//
+//extension MidDisp {
+//    public func next() {
+//        next(action: nil, completion: nil)
+//    }
+//    public func next(completion: @escaping (State) -> Void) {
+//        next(action: nil, completion: completion)
+//    }
+//
+//    public func next(action: Action) {
+//        next(action: action, completion: nil)
+//    }
+//
+//    public var any: AnyMidDisp<Action, State> { return AnyMidDisp(midDisp: self) }
+//}
+//
+//public struct AnyMidDisp<Action: StoreAction, State: StoreState>: MidDisp {
+//
+//    private let _next: (Action?, ((State) -> Void)?) -> Void
+//    fileprivate init<M: MidDisp>(midDisp: M) where M.Action == Action, M.State == State {
+//        _next = { action, completion in
+//            midDisp.next(action: action, completion: completion)
+//        }
+//    }
+//    public func next(action: Action?, completion: ((State) -> Void)?) {
+//        _next(action, completion)
+//    }
+//}
+
 public protocol AnyMiddleware {
     // TODO combine State + dispatcher = Store (find name) - change name for subjects ?
 
-    func next<State: StoreState>(for state: State, action: StoreAction, middlewares: AnyMiddlewares<State>, dispatcher: StoreActionDispatcher)
+    func onNext<State: StoreState>(for state: State, action: StoreAction, middlewares: AnyMiddlewares<State>, dispatcher: StoreActionDispatcher)
 }
 
 public protocol Middleware: AnyMiddleware {
     associatedtype Action: StoreAction
     associatedtype State: StoreState
 
-    func next(for state: State, action: Action, middlewares: Middlewares<Action, State>, dispatcher: StoreActionDispatcher)
+    func onNext(for state: State, action: Action, middlewares: Middlewares<Action, State>, dispatcher: StoreActionDispatcher)
 }
 
 extension AnyMiddleware where Self: Middleware {
-    public func next<State: StoreState>(for state: State, action: StoreAction, middlewares: AnyMiddlewares<State>, dispatcher: StoreActionDispatcher) {
+    public func onNext<State: StoreState>(for state: State, action: StoreAction, middlewares: AnyMiddlewares<State>, dispatcher: StoreActionDispatcher) {
         guard   let action = action as? Self.Action,
                 let state = state as? Self.State,
                 let middlewareDispatcher = middlewares.dispatcher as? MiddlewareDispatcher<Self.State>
@@ -42,7 +78,7 @@ extension AnyMiddleware where Self: Middleware {
         }
 
         let middlewares = Middlewares<Self.Action, Self.State>(dispatcher: middlewareDispatcher, action: action)
-        next(for: state, action: action, middlewares: middlewares, dispatcher: dispatcher)
+        onNext(for: state, action: action, middlewares: middlewares, dispatcher: dispatcher)
     }
 }
 
@@ -73,7 +109,7 @@ struct MiddlewareDispatcher<State: StoreState>: StoreActionDispatcher {
         let middlewareDispatcher = MiddlewareDispatcher(store: store, completion: compl, middleware: newWiddleware, reduce: reduce)
 
         let middlewares = AnyMiddlewares(dispatcher: middlewareDispatcher, action: action)
-        first.next(for: store.state, action: action, middlewares: middlewares, dispatcher: store)
+        first.onNext(for: store.state, action: action, middlewares: middlewares, dispatcher: store)
     }
 
     private func compose(completion1: ((State) -> Void)?, completion2: ((State) -> Void)?) -> ((State) -> Void)? {
