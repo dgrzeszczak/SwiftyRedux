@@ -12,7 +12,7 @@ public protocol StoreActionDispatcher {
     func dispatch(action: StoreAction)
 }
 
-public class Store<State: StoreState>: StoreActionDispatcher, StateSubject {
+public class Store<State: StoreState>: StoreActionDispatcher, AnyStateSubject {
 
     private(set) public var state: State
     private var middleware: [AnyMiddleware]
@@ -67,7 +67,7 @@ extension Store: AnyStateStore {
     }
 }
 
-fileprivate final class Subject<State: StoreState>: StateSubject {
+fileprivate final class Subject<State: StoreState>: AnyStateSubject {
 
     private var subscribers = [AnyWeakStoreSubscriber<State>]()
     private var activeSubscribers: [AnyWeakStoreSubscriber<State>] {
@@ -87,7 +87,7 @@ fileprivate final class Subject<State: StoreState>: StateSubject {
     }
 
     func anyState<AnyState>(state: State) -> AnyState? {
-        if AnyState.self == State.self { return state as? AnyState }
+        if AnyState.self == State.self { return (state as! AnyState) }
         let anyState: AnyState? = mappers.first { $0.matches(state: AnyState.self) }?.map(state: state)
         return anyState ?? state as? AnyState
     }
