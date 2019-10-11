@@ -35,7 +35,9 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStateSubject {
                                                         self?.reduce(with: action)
                                                      })
 
-        AnyMiddlewares<State>(dispatcher: dispatcher, action: action).next()
+        MiddlewareInterceptor<StoreAction, State> { act, completion in
+            dispatcher.next(action: act ?? action, completion: completion)
+        }.next()
     }
 
     private func reduce(with action: StoreAction) {
