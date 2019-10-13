@@ -11,9 +11,13 @@ import Foundation
 @available(*, deprecated, renamed: "StateSubscriber")
 public typealias StoreSubscriber = StateSubscriber
 
-public protocol StateSubscriber: class {
+public protocol StateAssociated {
     associatedtype State
+}
 
+public protocol StateSubscriber: class, StateAssociated {
+
+    associatedtype State
     func willChange(state: State?)
     func didChange(state: State, oldState: State?)
 }
