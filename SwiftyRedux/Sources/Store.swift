@@ -48,28 +48,21 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStateSubject {
     }
 
     public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber {
-        subject.add(subscriber: subscriber)
+        if let subscriber = subject.add(subscriber: subscriber) { // new subcriber added with success
+            subscriber.didChange(state: state, oldState: nil)
+        }
     }
 
     public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber {
         subject.remove(subscriber: subscriber)
     }
-}
 
-protocol AnyStateStore {
-    var anyStateStore: StoreState { get }
-    func anyState<AnyState>() -> AnyState?
-}
-
-extension Store: AnyStateStore {
-    var anyStateStore: StoreState { return state }
-
-    func anyState<AnyState>() -> AnyState? {
+    public func anyState<State>() -> State? {
         return subject.anyState(state: state)
     }
 }
 
-fileprivate final class Subject<State: StoreState>: AnyStateSubject {
+fileprivate final class Subject<State: StoreState> {
 
     private var subscribers = [AnyWeakStoreSubscriber<State>]()
     private var activeSubscribers: [AnyWeakStoreSubscriber<State>] {
@@ -94,15 +87,18 @@ fileprivate final class Subject<State: StoreState>: AnyStateSubject {
         return anyState ?? state as? AnyState
     }
 
-    func add<Subscriber>(subscriber: Subscriber) where Subscriber : StateSubscriber {
-        guard !activeSubscribers.contains(where: { $0.subscriber === subscriber }) else { return }
+    //return nil if subscriber already added
+    func add<Subscriber>(subscriber: Subscriber) -> AnyWeakStoreSubscriber<State>? where Subscriber: StateSubscriber {
+        guard !activeSubscribers.contains(where: { $0.subscriber === subscriber }) else { return nil }
 
+        //TODO optimize it
         let anySubscriber = mappers
             .first { $0.matches(state: Subscriber.State.self) }
             .flatMap { AnyWeakStoreSubscriber<State>(subscriber: subscriber, mapper: $0) }
             ?? AnyWeakStoreSubscriber<State>(subscriber: subscriber)
 
         subscribers.append(anySubscriber)
+        return anySubscriber
     }
 
     func remove<Subscriber>(subscriber: Subscriber) where Subscriber : StateSubscriber {

@@ -46,7 +46,7 @@ public struct AnyReducer<State> {
     }
 }
 
-public struct EmptyReducer<Action: StoreAction, State: StoreState>: Reducer {
+public struct EmptyReducer<Action: StoreAction, State>: Reducer {
 
     public static func reduce(state: State, with action: Action) -> State {
         return state

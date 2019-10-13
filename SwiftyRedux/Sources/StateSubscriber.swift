@@ -14,8 +14,8 @@ public typealias StoreSubscriber = StateSubscriber
 public protocol StateSubscriber: class {
     associatedtype State
 
-    func willChange(state: State)
-    func didChange(state: State, oldState: State)
+    func willChange(state: State?)
+    func didChange(state: State, oldState: State?)
 }
 
 public extension StateSubscriber {
@@ -25,20 +25,16 @@ public extension StateSubscriber {
 
 public protocol AnyStateSubject {
 
+    func anyState<State>() -> State?
+
     func add<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber
     func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber
 }
 
-public protocol StateSubject: AnyStateSubject {
-    associatedtype State
-
-    var state: State? { get }
-}
-
 class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
 
-    private let _willChange: ((_ state: Any) -> Void)
-    private let _didChange: ((_ state: Any, _ oldState: Any) -> Void)
+    private let _willChange: ((_ state: Any?) -> Void)
+    private let _didChange: ((_ state: Any, _ oldState: Any?) -> Void)
 
     private(set) weak var subscriber: AnyObject?
 
@@ -87,11 +83,11 @@ class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
         }
     }
 
-    func willChange(state: State) {
+    func willChange(state: State?) {
         _willChange(state)
     }
 
-    func didChange(state: State, oldState: State) {
+    func didChange(state: State, oldState: State?) {
         _didChange(state, oldState)
     }
 }
