@@ -19,8 +19,8 @@ public protocol StateSubscriber: class {
 }
 
 public extension StateSubscriber {
-    func willChange(state: State) { }
-    func didChange(state: State, oldState: State) { }
+    func willChange(state: State?) { }
+    func didChange(state: State, oldState: State?) { }
 }
 
 public protocol AnyStateSubject {
