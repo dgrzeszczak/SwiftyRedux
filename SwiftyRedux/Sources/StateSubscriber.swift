@@ -47,19 +47,17 @@ class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
         self.subscriber = subscriber
 
         _willChange = { [weak subscriber] state in
-            guard let subscriber = subscriber,
-                let state = state as? Subscriber.State
-            else { return }
-
+            guard let subscriber = subscriber else { return }
+            let state = state as? Subscriber.State
             subscriber.willChange(state: state )
         }
 
         _didChange = { [weak subscriber] state, oldState in
-            guard let subscriber = subscriber,
-                let state = state as? Subscriber.State,
-                let oldState = oldState as? Subscriber.State
+            guard   let subscriber = subscriber,
+                    let state = state as? Subscriber.State
             else { return }
 
+            let oldState = oldState as? Subscriber.State
             subscriber.didChange(state: state, oldState: oldState)
         }
     }

@@ -8,27 +8,27 @@
 
 public protocol AnyMiddleware {
 
-    func onNext<State: StoreState>(for state: State, action: StoreAction, interceptor: MiddlewareInterceptor<StoreAction, State>, dispatcher: StoreActionDispatcher)
+    func onNext<State: StoreState>(for state: State, action: StoreAction, interceptor: Interceptor<StoreAction, State>, dispatcher: StoreActionDispatcher)
 }
 
 public protocol Middleware: AnyMiddleware {
     associatedtype Action: StoreAction
     associatedtype State: StoreState
 
-    func onNext(for state: State, action: Action, interceptor: MiddlewareInterceptor<Action, State>, dispatcher: StoreActionDispatcher)
+    func onNext(for state: State, action: Action, interceptor: Interceptor<Action, State>, dispatcher: StoreActionDispatcher)
 }
 
 extension AnyMiddleware where Self: Middleware {
-    public func onNext<State: StoreState>(for state: State, action: StoreAction, interceptor: MiddlewareInterceptor<StoreAction, State>, dispatcher: StoreActionDispatcher) {
+    public func onNext<State: StoreState>(for state: State, action: StoreAction, interceptor: Interceptor<StoreAction, State>, dispatcher: StoreActionDispatcher) {
         guard   let action = action as? Self.Action,
                 let state = state as? Self.State,
-                let middleware = interceptor as? MiddlewareInterceptor<StoreAction, Self.State>
+                let middleware = interceptor as? Interceptor<StoreAction, Self.State>
         else {
             interceptor.next()
             return
         }
 
-        let middle = MiddlewareInterceptor<Self.Action, Self.State> { act, completion in
+        let middle = Interceptor<Self.Action, Self.State> { act, completion in
             middleware.next(action: act ?? action, completion: completion)
         }
         onNext(for: state, action: action, interceptor: middle, dispatcher: dispatcher)
@@ -61,7 +61,7 @@ struct MiddlewareDispatcher<State: StoreState>: StoreActionDispatcher {
         let first = newWiddleware.removeFirst()
         let middlewareDispatcher = MiddlewareDispatcher(store: store, completion: compl, middleware: newWiddleware, reduce: reduce)
 
-        let interceptor =  MiddlewareInterceptor<StoreAction, State> { act, completion in
+        let interceptor =  Interceptor<StoreAction, State> { act, completion in
             middlewareDispatcher.next(action: act ?? action, completion: completion)
         }
         first.onNext(for: store.state, action: action, interceptor: interceptor, dispatcher: store)
@@ -78,7 +78,7 @@ struct MiddlewareDispatcher<State: StoreState>: StoreActionDispatcher {
 }
 
 public typealias MiddlewareInterceptorFunction<Action, State> = (Action?, ((State) -> Void)?) -> Void where State: StoreState
-public struct MiddlewareInterceptor<Action, State: StoreState> {
+public struct Interceptor<Action, State: StoreState> {
 
     private let function: MiddlewareInterceptorFunction<Action, State>
     public init(function: @escaping MiddlewareInterceptorFunction<Action, State>) {

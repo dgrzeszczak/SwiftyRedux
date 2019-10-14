@@ -35,7 +35,7 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStateSubject {
                                                         self?.reduce(with: action)
                                                      })
 
-        MiddlewareInterceptor<StoreAction, State> { act, completion in
+        Interceptor<StoreAction, State> { act, completion in
             dispatcher.next(action: act ?? action, completion: completion)
         }.next()
     }
