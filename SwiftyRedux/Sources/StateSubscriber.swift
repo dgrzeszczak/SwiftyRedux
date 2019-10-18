@@ -18,12 +18,12 @@ public protocol StateAssociated {
 public protocol StateSubscriber: class, StateAssociated {
 
     associatedtype State
-    func willChange(state: State?)
+    func willChange(state: State)
     func didChange(state: State, oldState: State?)
 }
 
 public extension StateSubscriber {
-    func willChange(state: State?) { }
+    func willChange(state: State) { }
     func didChange(state: State, oldState: State?) { }
 }
 
@@ -37,7 +37,7 @@ public protocol AnyStateSubject {
 
 class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
 
-    private let _willChange: ((_ state: Any?) -> Void)
+    private let _willChange: ((_ state: Any) -> Void)
     private let _didChange: ((_ state: Any, _ oldState: Any?) -> Void)
 
     private(set) weak var subscriber: AnyObject?
@@ -47,8 +47,10 @@ class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
         self.subscriber = subscriber
 
         _willChange = { [weak subscriber] state in
-            guard let subscriber = subscriber else { return }
-            let state = state as? Subscriber.State
+            guard   let subscriber = subscriber,
+                    let state = state as? Subscriber.State
+            else { return }
+
             subscriber.willChange(state: state )
         }
 
@@ -68,24 +70,32 @@ class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
         self.subscriber = subscriber
 
         _willChange = { [weak subscriber] state in
-            guard let subscriber = subscriber,
-                let state: Subscriber.State = mapper.map(state: state as! State)
-                else { return }
+            guard   let subscriber = subscriber,
+                    let state: Subscriber.State = mapper.map(state: state as! State)
+            else { return }
 
             subscriber.willChange(state: state )
         }
 
         _didChange = { [weak subscriber] state, oldState in
-            guard let subscriber = subscriber,
-                let state: Subscriber.State = mapper.map(state: state as! State),
-                let oldState: Subscriber.State = mapper.map(state: oldState as! State)
-                else { return }
+            guard   let subscriber = subscriber,
+                    let state: Subscriber.State = mapper.map(state: state as! State)
+            else { return }
+
+            guard oldState != nil else {
+                subscriber.didChange(state: state, oldState: nil)
+                return
+            }
+
+            guard let oldState: Subscriber.State = mapper.map(state: oldState as! State) else {
+                return
+            }
 
             subscriber.didChange(state: state, oldState: oldState)
         }
     }
 
-    func willChange(state: State?) {
+    func willChange(state: State) {
         _willChange(state)
     }
 
