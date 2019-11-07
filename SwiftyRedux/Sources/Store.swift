@@ -12,18 +12,18 @@ public protocol StoreActionDispatcher {
     func dispatch(action: StoreAction)
 }
 
-public class Store<State: StoreState>: StoreActionDispatcher, AnyStateSubject {
+public class Store<State: StoreState>: StoreActionDispatcher, AnyStateTypeSubject {
 
     private(set) public var state: State
     private var middleware: [AnyMiddleware]
     private let reducer: AnyReducer<State>
-    private let subject: Subject<State>
+    private let subject: StoreSubject<State>
 
-    public init(with state: State, reducer: AnyReducer<State>, middleware: [AnyMiddleware] = [], stateMappers: [StoreStateMapper<State>] = []) {
+    public init(with state: State, reducer: AnyReducer<State>, middleware: [AnyMiddleware] = [], stateMappers: [StateMapper<State>] = []) {
         self.state = state
         self.middleware = middleware
         self.reducer = reducer
-        subject = Subject(stateMappers: stateMappers)
+        subject = StoreSubject(stateMappers: stateMappers)
     }
 
     public func dispatch(action: StoreAction) {
@@ -62,7 +62,7 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStateSubject {
     }
 }
 
-fileprivate final class Subject<State: StoreState> {
+final class StoreSubject<State> {
 
     private var subscribers = [AnyWeakStoreSubscriber<State>]()
     private var activeSubscribers: [AnyWeakStoreSubscriber<State>] {
@@ -70,8 +70,8 @@ fileprivate final class Subject<State: StoreState> {
         return subscribers
     }
 
-    var mappers: [StoreStateMapper<State>]
-    init(stateMappers: [StoreStateMapper<State>] = []) {
+    var mappers: [StateMapper<State>]
+    init(stateMappers: [StateMapper<State>] = []) {
         stateMappers.map { $0.newStateType }.forEach { newStateType in
             let count = stateMappers.filter { $0.newStateType == newStateType }.count
             guard count == 1 else {

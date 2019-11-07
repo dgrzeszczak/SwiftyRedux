@@ -27,15 +27,79 @@ public extension StateSubscriber {
     func didChange(state: State, oldState: State?) { }
 }
 
-public protocol AnyStateSubject {
-
-    func anyState<State>() -> State?
-
+public protocol Subject {
     func add<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber
     func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber
 }
 
-class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
+public protocol StateSubject: StateAssociated, Subject {
+    var state: State? { get }
+}
+
+public struct MockStateSubject<State>: StateSubject {
+
+    public private(set) var state: State? {
+        willSet {
+            subject.notifyStateWillChange(oldState: state!)
+        }
+
+        didSet {
+            subject.notifyStateDidChange(state: state!, oldState: oldValue!)
+        }
+    }
+
+    private let subject = StoreSubject<State>()
+
+    public init(state: State) {
+
+        self.state = state
+    }
+
+    public mutating func updateState(state: State) {
+        self.state = state
+    }
+
+    public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber {
+        if let subscriber = subject.add(subscriber: subscriber) { // new subcriber added with success
+            subscriber.didChange(state: state!, oldState: nil)
+        }
+    }
+
+    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber {
+        subject.remove(subscriber: subscriber)
+    }
+}
+
+extension StateSubject {
+    public var any: AnyStateSubject<State> { AnyStateSubject(subject: self) }
+}
+
+public struct AnyStateSubject<State>: StateSubject {
+
+    private let _state: () -> State?
+    private let subject: Subject
+
+    public var state: State? { _state() }
+
+    public func add<Subscriber>(subscriber: Subscriber) where Subscriber : StateSubscriber {
+        subject.add(subscriber: subscriber)
+    }
+
+    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber : StateSubscriber {
+        subject.remove(subscriber: subscriber)
+    }
+
+    public init<S: StateSubject>(subject: S) where S.State == State {
+        self.subject = subject
+        _state = { subject.state }
+    }
+}
+
+public protocol AnyStateTypeSubject: Subject {
+    func anyState<State>() -> State?
+}
+
+class AnyWeakStoreSubscriber<State>: StateSubscriber {
 
     private let _willChange: ((_ state: Any) -> Void)
     private let _didChange: ((_ state: Any, _ oldState: Any?) -> Void)
@@ -64,7 +128,7 @@ class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
         }
     }
 
-    init?<Subscriber>(subscriber: Subscriber, mapper: StoreStateMapper<State>) where Subscriber: StateSubscriber {
+    init?<Subscriber>(subscriber: Subscriber, mapper: StateMapper<State>) where Subscriber: StateSubscriber {
         guard mapper.matches(state: Subscriber.State.self) else { return nil }
 
         self.subscriber = subscriber
@@ -115,7 +179,11 @@ class AnyWeakStoreSubscriber<State: StoreState>: StateSubscriber {
 //    }
 //}
 
-public struct StoreStateMapper<State: StoreState> {
+
+@available(*, deprecated, renamed: "StateMapper")
+public typealias StoreStateMapper = StateMapper
+
+public struct StateMapper<State> {
 
     let newStateType: Any.Type
     private let _map: (State) -> Any
