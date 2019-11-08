@@ -36,7 +36,7 @@ public protocol StateSubject: StateAssociated, Subject {
     var state: State? { get }
 }
 
-public struct MockStateSubject<State>: StateSubject {
+public final class MockStateSubject<State>: StateSubject {
 
     public private(set) var state: State? {
         willSet {
@@ -55,7 +55,7 @@ public struct MockStateSubject<State>: StateSubject {
         self.state = state
     }
 
-    public mutating func updateState(state: State) {
+    public func updateState(state: State) {
         self.state = state
     }
 
