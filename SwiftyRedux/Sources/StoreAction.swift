@@ -6,4 +6,7 @@
 //  Copyright © 2018 Dariusz Grzeszczak. All rights reserved.
 //
 
+import Foundation
+
+/// Action that can be dispatched in the store.
 public protocol StoreAction {}

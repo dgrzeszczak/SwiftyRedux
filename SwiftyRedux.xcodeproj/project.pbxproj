@@ -11,9 +11,17 @@
 		0856ED672162C0BD00010557 /* SwiftyRedux.h in Headers */ = {isa = PBXBuildFile; fileRef = 0856ED592162C0BD00010557 /* SwiftyRedux.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0856ED762162C28700010557 /* StoreAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0856ED712162C28700010557 /* StoreAction.swift */; };
 		0856ED782162C28700010557 /* Reducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0856ED722162C28700010557 /* Reducer.swift */; };
-		0856ED7A2162C28700010557 /* Middleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0856ED732162C28700010557 /* Middleware.swift */; };
 		0856ED7C2162C28700010557 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0856ED742162C28700010557 /* Store.swift */; };
-		0856ED7E2162C28700010557 /* StateSubscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0856ED752162C28700010557 /* StateSubscriber.swift */; };
+		08A6D60D23A0500200EF2F44 /* StateObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D60C23A0500200EF2F44 /* StateObserver.swift */; };
+		08A6D61523A051E400EF2F44 /* Dispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D61423A051E400EF2F44 /* Dispatcher.swift */; };
+		08A6D61723A0524000EF2F44 /* StateMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D61623A0524000EF2F44 /* StateMapper.swift */; };
+		08A6D61923A0598800EF2F44 /* StateAssociated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D61823A0598800EF2F44 /* StateAssociated.swift */; };
+		08A6D63423A1325A00EF2F44 /* AnyMiddleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D62D23A1325A00EF2F44 /* AnyMiddleware.swift */; };
+		08A6D63523A1325A00EF2F44 /* Interceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D62E23A1325A00EF2F44 /* Interceptor.swift */; };
+		08A6D63623A1325A00EF2F44 /* Middleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D62F23A1325A00EF2F44 /* Middleware.swift */; };
+		08A6D63723A1325A00EF2F44 /* MockStateSubject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D63123A1325A00EF2F44 /* MockStateSubject.swift */; };
+		08A6D63823A1325A00EF2F44 /* Subject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D63223A1325A00EF2F44 /* Subject.swift */; };
+		08A6D63923A1325A00EF2F44 /* StateSubject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6D63323A1325A00EF2F44 /* StateSubject.swift */; };
 		08ADCDA4229BCBFB004CD357 /* SwiftyReduxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0856ED642162C0BD00010557 /* SwiftyReduxTests.swift */; };
 		08ADCDDC229DBF10004CD357 /* StoreState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08ADCDDB229DBF10004CD357 /* StoreState.swift */; };
 		08C81903229B178600F23116 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0856ED742162C28700010557 /* Store.swift */; };
@@ -38,9 +46,17 @@
 		0856ED662162C0BD00010557 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0856ED712162C28700010557 /* StoreAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreAction.swift; sourceTree = "<group>"; };
 		0856ED722162C28700010557 /* Reducer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reducer.swift; sourceTree = "<group>"; };
-		0856ED732162C28700010557 /* Middleware.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Middleware.swift; sourceTree = "<group>"; };
 		0856ED742162C28700010557 /* Store.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
-		0856ED752162C28700010557 /* StateSubscriber.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StateSubscriber.swift; sourceTree = "<group>"; };
+		08A6D60C23A0500200EF2F44 /* StateObserver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StateObserver.swift; sourceTree = "<group>"; };
+		08A6D61423A051E400EF2F44 /* Dispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dispatcher.swift; sourceTree = "<group>"; };
+		08A6D61623A0524000EF2F44 /* StateMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMapper.swift; sourceTree = "<group>"; };
+		08A6D61823A0598800EF2F44 /* StateAssociated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateAssociated.swift; sourceTree = "<group>"; };
+		08A6D62D23A1325A00EF2F44 /* AnyMiddleware.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyMiddleware.swift; sourceTree = "<group>"; };
+		08A6D62E23A1325A00EF2F44 /* Interceptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Interceptor.swift; sourceTree = "<group>"; };
+		08A6D62F23A1325A00EF2F44 /* Middleware.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Middleware.swift; sourceTree = "<group>"; };
+		08A6D63123A1325A00EF2F44 /* MockStateSubject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockStateSubject.swift; sourceTree = "<group>"; };
+		08A6D63223A1325A00EF2F44 /* Subject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subject.swift; sourceTree = "<group>"; };
+		08A6D63323A1325A00EF2F44 /* StateSubject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StateSubject.swift; sourceTree = "<group>"; };
 		08ADCDDB229DBF10004CD357 /* StoreState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -104,12 +120,16 @@
 		0856ED702162C28700010557 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				0856ED712162C28700010557 /* StoreAction.swift */,
-				0856ED722162C28700010557 /* Reducer.swift */,
-				0856ED732162C28700010557 /* Middleware.swift */,
 				0856ED742162C28700010557 /* Store.swift */,
+				0856ED712162C28700010557 /* StoreAction.swift */,
 				08ADCDDB229DBF10004CD357 /* StoreState.swift */,
-				0856ED752162C28700010557 /* StateSubscriber.swift */,
+				08A6D61423A051E400EF2F44 /* Dispatcher.swift */,
+				0856ED722162C28700010557 /* Reducer.swift */,
+				08A6D61823A0598800EF2F44 /* StateAssociated.swift */,
+				08A6D60C23A0500200EF2F44 /* StateObserver.swift */,
+				08A6D61623A0524000EF2F44 /* StateMapper.swift */,
+				08A6D62C23A1325A00EF2F44 /* Middleware */,
+				08A6D63023A1325A00EF2F44 /* Subject */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -119,6 +139,26 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		08A6D62C23A1325A00EF2F44 /* Middleware */ = {
+			isa = PBXGroup;
+			children = (
+				08A6D62F23A1325A00EF2F44 /* Middleware.swift */,
+				08A6D62D23A1325A00EF2F44 /* AnyMiddleware.swift */,
+				08A6D62E23A1325A00EF2F44 /* Interceptor.swift */,
+			);
+			path = Middleware;
+			sourceTree = "<group>";
+		};
+		08A6D63023A1325A00EF2F44 /* Subject */ = {
+			isa = PBXGroup;
+			children = (
+				08A6D63223A1325A00EF2F44 /* Subject.swift */,
+				08A6D63323A1325A00EF2F44 /* StateSubject.swift */,
+				08A6D63123A1325A00EF2F44 /* MockStateSubject.swift */,
+			);
+			path = Subject;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -230,12 +270,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0856ED7E2162C28700010557 /* StateSubscriber.swift in Sources */,
-				0856ED7A2162C28700010557 /* Middleware.swift in Sources */,
+				08A6D63723A1325A00EF2F44 /* MockStateSubject.swift in Sources */,
+				08A6D63823A1325A00EF2F44 /* Subject.swift in Sources */,
+				08A6D63923A1325A00EF2F44 /* StateSubject.swift in Sources */,
+				08A6D60D23A0500200EF2F44 /* StateObserver.swift in Sources */,
+				08A6D63523A1325A00EF2F44 /* Interceptor.swift in Sources */,
+				08A6D63623A1325A00EF2F44 /* Middleware.swift in Sources */,
+				08A6D61723A0524000EF2F44 /* StateMapper.swift in Sources */,
+				08A6D61923A0598800EF2F44 /* StateAssociated.swift in Sources */,
 				0856ED782162C28700010557 /* Reducer.swift in Sources */,
 				08ADCDDC229DBF10004CD357 /* StoreState.swift in Sources */,
+				08A6D61523A051E400EF2F44 /* Dispatcher.swift in Sources */,
 				0856ED762162C28700010557 /* StoreAction.swift in Sources */,
 				0856ED7C2162C28700010557 /* Store.swift in Sources */,
+				08A6D63423A1325A00EF2F44 /* AnyMiddleware.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

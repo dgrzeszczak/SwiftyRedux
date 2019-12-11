@@ -8,17 +8,20 @@
 
 import Foundation
 
-public protocol StoreActionDispatcher {
-    func dispatch(action: StoreAction)
-}
-
-public class Store<State: StoreState>: StoreActionDispatcher, AnyStateTypeSubject {
+/// Contains application state that can be changed only by dispatching an action. Notifies observers of every state change.
+public class Store<State: StoreState>: Dispatcher, Subject {
 
     private(set) public var state: State
     private var middleware: [AnyMiddleware]
     private let reducer: AnyReducer<State>
     private let subject: StoreSubject<State>
 
+    /// Initializes the store with
+    /// - Parameters:
+    ///   - state: initial state of the app
+    ///   - reducer: reducer used to generate new app state based on dispatched action and current state
+    ///   - middleware:middleware stack to enchance action's dispatch functionality
+    ///   - stateMappers: application state mappers used to observe application's 'substates'
     public init(with state: State, reducer: AnyReducer<State>, middleware: [AnyMiddleware] = [], stateMappers: [StateMapper<State>] = []) {
         self.state = state
         self.middleware = middleware
@@ -26,9 +29,11 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStateTypeSubjec
         subject = StoreSubject(stateMappers: stateMappers)
     }
 
+    /// Dishpatches actions in the store. Actions go through middleware stack and are reduced at the end.
+    /// - Parameter action: action to dospatch
     public func dispatch(action: StoreAction) {
 
-        let dispatcher = MiddlewareDispatcher<State>(store: self,
+        let dispatcher = MiddlewareInterceptor<State>(store: self,
                                                      completion: nil,
                                                      middleware: middleware,
                                                      reduce: { [weak self] in
@@ -47,27 +52,41 @@ public class Store<State: StoreState>: StoreActionDispatcher, AnyStateTypeSubjec
         subject.notifyStateDidChange(state: state, oldState: oldState)
     }
 
-    public func add<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber {
-        if let subscriber = subject.add(subscriber: subscriber) { // new subcriber added with success
+
+    /// Adds state observer. Observer will be notified on every state change occured in the store. It's allowed to add oobserver for any application substate - but appropriete StateMapper has to be added during the store initialization.
+    /// - Parameter observer: application's state/substate observer. Weak reference is made for the observer so you have to keep the reference by yourself and observer will be automatically removed.
+    public func add<Observer>(observer: Observer) where Observer: StateObserver {
+        if let subscriber = subject.add(observer: observer) { // new subcriber added with success
             subscriber.didChange(state: state, oldState: nil)
         }
     }
 
-    public func remove<Subscriber>(subscriber: Subscriber) where Subscriber: StateSubscriber {
-        subject.remove(subscriber: subscriber)
-    }
 
-    public func anyState<State>() -> State? {
+    /// Removes state observer.
+    /// - Parameter observer: observer to remove
+    public func remove<Observer>(observer: Observer) where Observer: StateObserver {
+        subject.remove(observer: observer)
+    }
+}
+
+// ------
+
+protocol AnyStateProvider {
+    func anyState<State>() -> State?
+}
+
+extension Store: AnyStateProvider {
+    func anyState<State>() -> State? {
         return subject.anyState(state: state)
     }
 }
 
 final class StoreSubject<State> {
 
-    private var subscribers = [AnyWeakStoreSubscriber<State>]()
-    private var activeSubscribers: [AnyWeakStoreSubscriber<State>] {
-        subscribers = subscribers.filter { $0.subscriber != nil }
-        return subscribers
+    private var observers = [AnyWeakStoreObserver<State>]()
+    private var activeObservers: [AnyWeakStoreObserver<State>] {
+        observers = observers.filter { $0.observer != nil }
+        return observers
     }
 
     var mappers: [StateMapper<State>]
@@ -88,29 +107,29 @@ final class StoreSubject<State> {
     }
 
     //return nil if subscriber already added
-    func add<Subscriber>(subscriber: Subscriber) -> AnyWeakStoreSubscriber<State>? where Subscriber: StateSubscriber {
-        guard !activeSubscribers.contains(where: { $0.subscriber === subscriber }) else { return nil }
+    func add<Observer>(observer: Observer) -> AnyWeakStoreObserver<State>? where Observer: StateObserver {
+        guard !activeObservers.contains(where: { $0.observer === observer }) else { return nil }
 
         //TODO optimize it
-        let anySubscriber = mappers
-            .first { $0.matches(state: Subscriber.State.self) }
-            .flatMap { AnyWeakStoreSubscriber<State>(subscriber: subscriber, mapper: $0) }
-            ?? AnyWeakStoreSubscriber<State>(subscriber: subscriber)
+        let anyObserver = mappers
+            .first { $0.matches(state: Observer.State.self) }
+            .flatMap { AnyWeakStoreObserver<State>(observer: observer, mapper: $0) }
+            ?? AnyWeakStoreObserver<State>(observer: observer)
 
-        subscribers.append(anySubscriber)
-        return anySubscriber
+        observers.append(anyObserver)
+        return anyObserver
     }
 
-    func remove<Subscriber>(subscriber: Subscriber) where Subscriber : StateSubscriber {
-        guard let index = activeSubscribers.firstIndex(where: { $0.subscriber === subscriber }) else { return }
-        subscribers.remove(at: index)
+    func remove<Observer>(observer: Observer) where Observer : StateObserver {
+        guard let index = activeObservers.firstIndex(where: { $0.observer === observer }) else { return }
+        observers.remove(at: index)
     }
 
     func notifyStateWillChange(oldState: State) {
-        activeSubscribers.forEach { $0.willChange(state: oldState) }
+        activeObservers.forEach { $0.willChange(state: oldState) }
     }
 
     func notifyStateDidChange(state: State, oldState: State) {
-        activeSubscribers.forEach { $0.didChange(state: state, oldState: oldState) }
+        activeObservers.forEach { $0.didChange(state: state, oldState: oldState) }
     }
 }

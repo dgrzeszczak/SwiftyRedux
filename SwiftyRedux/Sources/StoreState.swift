@@ -8,4 +8,5 @@
 
 import Foundation
 
+/// Application state managed by  the store.
 public typealias StoreState = Any
