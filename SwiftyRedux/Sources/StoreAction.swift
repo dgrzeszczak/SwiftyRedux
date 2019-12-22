@@ -8,5 +8,5 @@
 
 import Foundation
 
-/// Action that can be dispatched in the store.
+/// Action that can be dispatched by Dispatrcher eg. Store.
 public protocol StoreAction {}

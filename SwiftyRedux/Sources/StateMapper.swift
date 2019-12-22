@@ -8,7 +8,20 @@
 
 import Foundation
 
-/// Maps application state to any 'sub'state that may be observed in the store.
+/**
+ Maps application state to any other 'substate' that may be observed in the store.
+
+ #Example
+     struct ApplicationState: StoreState {
+
+        let userState: UserState
+        let favouritesState: FavouritesState
+
+        let factory: ViewModelFactory
+     }
+
+     let userStateMapper = StateMapper<ApplicationState> { $0.userState }
+ */
 public struct StateMapper<State> {
 
     let newStateType: Any.Type

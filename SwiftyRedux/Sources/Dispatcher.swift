@@ -9,12 +9,13 @@
 import Foundation
 
 
-/// Gives the option to dishpatch actions
+/// Object that is able to dishpatch actions
 public protocol Dispatcher {
-    /// Dishpatches action.
+    /// Dishpatches an action.
     /// - Parameter action: action to dispach
     func dispatch(action: StoreAction)
 }
 
+/// Gives the option to dishpatch actions
 @available(*, deprecated, renamed: "Dispatcher")
 public typealias StoreActionDispatcher = Dispatcher

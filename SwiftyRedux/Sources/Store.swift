@@ -8,19 +8,24 @@
 
 import Foundation
 
-/// Contains application state that can be changed only by dispatching an action. Notifies observers of every state change.
+/**
+ Contains application state that can be changed only by dispatching an action.
+
+ Notifies observers of every state change.
+ */
 public class Store<State: StoreState>: Dispatcher, Subject {
 
+    /// Current state value
     private(set) public var state: State
     private var middleware: [AnyMiddleware]
     private let reducer: AnyReducer<State>
     private let subject: StoreSubject<State>
 
-    /// Initializes the store with
+    /// Initializes the store
     /// - Parameters:
     ///   - state: initial state of the app
     ///   - reducer: reducer used to generate new app state based on dispatched action and current state
-    ///   - middleware:middleware stack to enchance action's dispatch functionality
+    ///   - middleware:middleware used to enchance action's dispatch functionality
     ///   - stateMappers: application state mappers used to observe application's 'substates'
     public init(with state: State, reducer: AnyReducer<State>, middleware: [AnyMiddleware] = [], stateMappers: [StateMapper<State>] = []) {
         self.state = state
@@ -29,7 +34,7 @@ public class Store<State: StoreState>: Dispatcher, Subject {
         subject = StoreSubject(stateMappers: stateMappers)
     }
 
-    /// Dishpatches actions in the store. Actions go through middleware stack and are reduced at the end.
+    /// Dishpatches actions in the store. Actions go through middleware and are reduced at the end.
     /// - Parameter action: action to dospatch
     public func dispatch(action: StoreAction) {
 
@@ -53,7 +58,7 @@ public class Store<State: StoreState>: Dispatcher, Subject {
     }
 
 
-    /// Adds state observer. Observer will be notified on every state change occured in the store. It's allowed to add oobserver for any application substate - but appropriete StateMapper has to be added during the store initialization.
+    /// Adds the state observer. Observer will be notified on every state change occured in the store. It's allowed to add observer for any application's 'substate' - but appropriete StateMapper has to be added during the store initialization.
     /// - Parameter observer: application's state/substate observer. Weak reference is made for the observer so you have to keep the reference by yourself and observer will be automatically removed.
     public func add<Observer>(observer: Observer) where Observer: StateObserver {
         if let subscriber = subject.add(observer: observer) { // new subcriber added with success

@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// Describes subject that can be used to observe state changes
+/// Describes a subject that can be used to observe state changes
 public protocol Subject {
     /// Adds state observer
     /// - Parameter observer: observer to be notified on state changes

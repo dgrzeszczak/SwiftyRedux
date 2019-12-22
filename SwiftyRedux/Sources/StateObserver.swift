@@ -9,8 +9,13 @@
 import Foundation
 
 /// Observes every change of the state
+@available(*, deprecated, renamed: "StateObserver")
+public typealias StateSubscriber = StateObserver
+
+/// Observes every change of the state
 public protocol StateObserver: class, StateAssociated {
 
+    /// type of state to observe
     associatedtype State
     /// Notifies that state is going to be changed. Implementation of this method is optional ie. empty implemetation is provided.
     /// - Parameter state: state the is going to be changed

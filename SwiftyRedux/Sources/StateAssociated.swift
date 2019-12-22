@@ -10,5 +10,7 @@ import Foundation
 
 /// Associate object with the State
 public protocol StateAssociated {
+
+    /// State type associated with the object
     associatedtype State
 }

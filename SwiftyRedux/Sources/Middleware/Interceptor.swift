@@ -8,11 +8,12 @@
 
 import Foundation
 
-/// Mechanism that intercepts call of next() method to the custom function. Used in middleware process to intercept action to next middleware in the stack. May be used in UnitTests to test middleware intercept action properly.
+/// Intercepts call of next(action:completion:) method to the custom function. Used by Middleware to intercept the action to the next middleware in the stack.
+/// May be used in UnitTests to test if middleware intercepts an action properly.
 public struct Interceptor<Action, State: StoreState> {
 
     private let _next: InterceptorNextFunction<Action, State>
-    /// Initialize interceptor with custom function. ``
+    /// Initialize interceptor with custom function.
     /// - Parameter next: custom function that next() call will be intercepted to
     public init(next: @escaping InterceptorNextFunction<Action, State>) {
         self._next = next
@@ -27,4 +28,5 @@ public struct Interceptor<Action, State: StoreState> {
     }
 }
 
+/// Custom function that Interceptor's next(action:completion:) method will be intercepted to
 public typealias InterceptorNextFunction<Action, State> = (Action?, ((State) -> Void)?) -> Void where State: StoreState

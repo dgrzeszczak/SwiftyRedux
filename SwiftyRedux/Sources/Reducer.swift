@@ -8,10 +8,22 @@
 
 import Foundation
 
+/**
+ Provides pure function that creates new state based on the action and current state. It is associated with specific Action type.
 
-/// Provides pure function that creates new state based on the action and current state. It reduces one type of actions.
+ #Example
+     struct LoginReducer: Reducer {
+
+         static func reduce(state: AppState, with action: LoginAction) -> AppState {
+             let user = User(firstName: action.firstName, lastName: action.lastName)
+             return AppState(factory: state.factory, user: user)
+         }
+     }
+ */
 public protocol Reducer {
+    /// type of action handled by this Reducer
     associatedtype Action: StoreAction
+    /// type of state handled by this Reducer
     associatedtype State
 
     /// Pure function that returns new state based on current state and the action
@@ -27,8 +39,36 @@ extension Reducer {
     public static var any: AnyReducer<State> { return AnyReducer(reducer: self) }
 }
 
+/**
+ Type erasured reducer. Used to make composition of pure reducers into more complicated state reducers.
 
-/// Type erasured reducer. Used also for composition pure functions into more complicated state reducers. It reduces multiple types of actions.
+ #Examples
+
+ - Convert Reducer to AnyReducer
+    ```
+    let anyLoginReducer = LoginReducer.any // AnyReducer<UserState>
+    ```
+
+ - Compose reducers for the same State
+    ```
+    let userReducer = AnyReducer(with: [LoginReducer.any, LogoutReducer.any]) // AnyReducer<UserState>
+    ```
+
+ - Create reducer for complex state that contains couple of 'subStates'
+    ```
+     let applicationReducer = AnyReducer { state, action -> ApplicationState in
+
+        let userReducer = AnyReducer(with: [LoginReducer.any, LogoutReducer.any])
+        // ...
+        return ApplicationState(
+             userState: userReducer.reduce(state: state.userState, with: action),
+             favouritesState: favouriteReducer.reduce(state: state.favouritesState, with: action),
+
+            // ...
+        )
+     }
+    ```
+ */
 public struct AnyReducer<State> {
 
     private var reducer: (_ state: State, _ action: StoreAction) -> State
