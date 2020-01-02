@@ -33,6 +33,12 @@ public struct StateMapper<State> {
         _map = { map($0) }
     }
 
+    /// Initialize mapper with keyPath to substate
+    /// - Parameter keyPath: property key path to substate
+    public init<NewState>(keyPath: KeyPath<State, NewState>) {
+        self.init { $0[keyPath: keyPath] }
+    }
+
     func matches<State>(state: State.Type) -> Bool {
         return newStateType == state
     }
