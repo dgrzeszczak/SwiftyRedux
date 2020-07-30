@@ -42,11 +42,11 @@ import Foundation
          }
      }
  */
-public protocol Middleware: AnyMiddleware {
+public protocol Middleware {
     /// type of action handled by this Middleware
-    associatedtype Action: StoreAction
+    associatedtype Action
     /// type of state handled by this Middleware
-    associatedtype State: StoreState
+    associatedtype State
 
     /// Method will be called during dispatch process.
     /// - Parameters:
@@ -57,20 +57,10 @@ public protocol Middleware: AnyMiddleware {
     func onNext(for state: State, action: Action, interceptor: Interceptor<Action, State>, dispatcher: Dispatcher)
 }
 
-extension AnyMiddleware where Self: Middleware {
-    public func onNext<State: StoreState>(for state: State, action: StoreAction, interceptor: Interceptor<StoreAction, State>, dispatcher: Dispatcher) {
-        guard   let action = action as? Self.Action,
-                let state = state as? Self.State,
-                let inter = interceptor as? Interceptor<StoreAction, Self.State>
-        else {
-            interceptor.next()
-            return
-        }
+extension Middleware {
 
-        let interceptor = Interceptor<Self.Action, Self.State> { act, completion in
-            inter.next(action: act ?? action, completion: completion)
-        }
-        onNext(for: state, action: action, interceptor: interceptor, dispatcher: dispatcher)
+    public var any: AnyMiddleware {
+        AnyMiddleware(middleware: self)
     }
 }
 

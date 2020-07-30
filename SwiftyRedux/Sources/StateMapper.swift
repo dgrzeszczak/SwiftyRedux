@@ -35,16 +35,33 @@ public struct StateMapper<State> {
 
     /// Initialize mapper with keyPath to substate
     /// - Parameter keyPath: property key path to substate
-    public init<NewState>(keyPath: KeyPath<State, NewState>) {
+    public init<NewState>(for keyPath: KeyPath<State, NewState>) {
         self.init { $0[keyPath: keyPath] }
     }
 
-    func matches<State>(state: State.Type) -> Bool {
+    public func map<NewState>(map: @escaping (NewState) -> State) -> StateMapper<NewState> {
+        StateMapper<NewState>(child: self, map: map)
+    }
+
+    public func map<NewState>(with keyPath: KeyPath<NewState, State>) -> StateMapper<NewState> {
+        StateMapper<NewState>(child: self, map: { $0[keyPath: keyPath] })
+    }
+
+    private init<ChildState>(child: StateMapper<ChildState>, map: @escaping (State) -> ChildState) {
+        newStateType = child.newStateType
+        _map = { child.map(state: map($0)) }
+    }
+
+    func matches(state: Any.Type) -> Bool {
         return newStateType == state
+    }
+
+    func map(state: State) -> Any {
+        _map(state)
     }
 
     func map<NewState>(state: State) -> NewState? {
         guard newStateType == NewState.self else { return nil }
-        return _map(state) as? NewState
+        return map(state: state) as? NewState
     }
 }

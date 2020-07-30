@@ -29,7 +29,7 @@ public class Store<State: StoreState>: Dispatcher, Subject {
     ///   - stateMappers: application state mappers used to observe application's 'substates'
     public init(with state: State, reducer: AnyReducer<State>, middleware: [AnyMiddleware] = [], stateMappers: [StateMapper<State>] = []) {
         self.state = state
-        self.middleware = middleware
+        self.middleware = middleware.map { AnyMiddleware(middleware: $0, mappers: stateMappers) }
         self.reducer = reducer
         subject = StoreSubject(stateMappers: stateMappers)
     }
