@@ -82,7 +82,7 @@ public struct StatePublished<State> {
 }
 
 /// Type erased StateSubject
-public struct AnyStateSubject<State>: StateSubject {
+public class AnyStateSubject<State>: StateSubject {
 
     /// Current state value
     @StatePublished public var state: State? //{ _state() }
@@ -107,7 +107,7 @@ public struct AnyStateSubject<State>: StateSubject {
 }
 #else
 /// Type erased StateSubject
-public struct AnyStateSubject<State>: StateSubject {
+public class AnyStateSubject<State>: StateSubject {
 
     private let _state: () -> State?
     private let subject: Subject
