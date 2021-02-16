@@ -20,8 +20,10 @@ public struct StatePublished<State> {
 
     public var wrappedValue: State? { state() }
 
+    #if canImport(Combine)
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     public var projectedValue: Publisher { Publisher(subject: subject) }
+    #endif
 
     func add<Observer>(observer: Observer) where Observer : StateObserver {
         subject.add(observer: observer)
@@ -41,6 +43,7 @@ public struct StatePublished<State> {
         state = { subject.state }
     }
 
+    #if canImport(Combine)
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     public struct Publisher: Combine.Publisher {
 
@@ -77,8 +80,8 @@ public struct StatePublished<State> {
             }
 
         }
-
     }
+    #endif
 }
 
 /// Type erased StateSubject
