@@ -103,3 +103,74 @@ struct MiddlewareInterceptor<State: StoreState> {
         }
     }
 }
+
+//public protocol AnyReducerConvertible {
+//    //var any: AnyMiddleware { get }
+//}
+//
+//public typealias ReducerStack<State> = [AnyReducer<State>]
+//
+//@_functionBuilder
+//public struct ReducerBuilder {
+//    public static func buildBlock<State>(_ middleware: AnyMiddlewareConvertible...) -> ReducerStack<State> {
+//
+//        //return middleware.map { $0.any }
+//    }
+//}
+
+//extension MiddlewareStack {
+//    public init(@ReducerBuilder _ builder: () -> MiddlewareStack) {
+//        self.init(builder())
+//    }
+//}
+//
+//public protocol AnyMiddlewareConvertible {
+//    var any: AnyMiddleware { get }
+//}
+
+//public typealias MiddlewareStack = [AnyMiddleware]
+//
+//@_functionBuilder
+//public struct MiddlewareBuilder {
+//    public static func buildBlock(_ middleware: AnyMiddlewareConvertible...) -> MiddlewareStack {
+//        return middleware.map { $0.any }
+//    }
+//}
+//
+//extension MiddlewareStack {
+//    public init(@Middleware _ builder: () -> MiddlewareStack) {
+//        self.init(builder())
+//    }
+//}
+//
+//struct Middleware1: Middleware {
+//
+//    typealias State = Int
+//    typealias Action = String
+//
+//
+//    func onNext(for state: State, action: Action, interceptor: Interceptor<Action, State>, dispatcher: Dispatcher) {
+//
+//    }
+//}
+//
+//struct Middleware3: Middleware {
+//
+//    typealias State = Int
+//    typealias Action = String
+//
+//
+//    func onNext(for state: State, action: Action, interceptor: Interceptor<Action, State>, dispatcher: Dispatcher) {
+//
+//    }
+//}
+//
+//
+//func test() {
+//
+//
+//    MiddlewareStack {
+//        Middleware1()
+//        Middleware3()
+//    }
+//}
