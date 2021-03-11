@@ -13,13 +13,13 @@ import Foundation
 
  Notifies observers of every state change.
  */
-public class Store<State: StoreState>: Dispatcher, Subject {
+public class Store<State: StoreState>: Dispatcher, Source {
 
     /// Current state value
     private(set) public var state: State
     private var middleware: [AnyMiddleware]
     private let reducer: AnyReducer<State>
-    private let subject: StoreSubject<State>
+    private let source: StoreSource<State>
 
     /// Initializes the store
     /// - Parameters:
@@ -31,7 +31,7 @@ public class Store<State: StoreState>: Dispatcher, Subject {
         self.state = state
         self.middleware = middleware.map { AnyMiddleware(middleware: $0, mappers: stateMappers) }
         self.reducer = reducer
-        subject = StoreSubject(stateMappers: stateMappers)
+        source = StoreSource(stateMappers: stateMappers)
     }
 
     /// Dishpatches actions in the store. Actions go through middleware and are reduced at the end.
@@ -52,16 +52,16 @@ public class Store<State: StoreState>: Dispatcher, Subject {
 
     private func reduce(with action: StoreAction) {
         let oldState = state
-        subject.notifyStateWillChange(oldState: oldState)
+        source.notifyStateWillChange(oldState: oldState)
         state = reducer.reduce(state: oldState, with: action)
-        subject.notifyStateDidChange(state: state, oldState: oldState)
+        source.notifyStateDidChange(state: state, oldState: oldState)
     }
 
 
     /// Adds the state observer. Observer will be notified on every state change occured in the store. It's allowed to add observer for any application's 'substate' - but appropriete StateMapper has to be added during the store initialization.
     /// - Parameter observer: application's state/substate observer. Weak reference is made for the observer so you have to keep the reference by yourself and observer will be automatically removed.
     public func add<Observer>(observer: Observer) where Observer: StateObserver {
-        if let subscriber = subject.add(observer: observer) { // new subcriber added with success
+        if let subscriber = source.add(observer: observer) { // new subcriber added with success
             subscriber.didChange(state: state, oldState: nil)
         }
     }
@@ -70,7 +70,7 @@ public class Store<State: StoreState>: Dispatcher, Subject {
     /// Removes state observer.
     /// - Parameter observer: observer to remove
     public func remove<Observer>(observer: Observer) where Observer: StateObserver {
-        subject.remove(observer: observer)
+        source.remove(observer: observer)
     }
 }
 
@@ -82,11 +82,11 @@ protocol AnyStateProvider {
 
 extension Store: AnyStateProvider {
     func anyState<State>() -> State? {
-        return subject.anyState(state: state)
+        return source.anyState(state: state)
     }
 }
 
-final class StoreSubject<State> {
+final class StoreSource<State> {
 
     private var observers = [AnyWeakStoreObserver<State>]()
     private var activeObservers: [AnyWeakStoreObserver<State>] {

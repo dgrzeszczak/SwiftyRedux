@@ -1,5 +1,5 @@
 //
-//  Subject.swift
+//  Source.swift
 //  SwiftyRedux
 //
 //  Created by Dariusz Grzeszczak on 10/12/2019.
@@ -8,8 +8,8 @@
 
 import Foundation
 
-/// Describes a subject that can be used to observe state changes
-public protocol Subject {
+/// Describes a source that can be used to observe state changes
+public protocol Source {
     /// Adds state observer
     /// - Parameter observer: observer to be notified on state changes
     func add<Observer>(observer: Observer) where Observer: StateObserver

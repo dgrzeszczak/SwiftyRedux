@@ -20,7 +20,7 @@ public protocol StateObserver: class, StateAssociated {
     /// Notifies that state is going to be changed. Implementation of this method is optional ie. empty implemetation is provided.
     /// - Parameter state: state the is going to be changed
     func willChange(state: State)
-    /// Norifies the state did changed or initial value provided while adding to subject. Implementation of this method is optional ie. empty implemetation is provided.
+    /// Norifies the state did changed or initial value provided while adding to source. Implementation of this method is optional ie. empty implemetation is provided.
     /// - Parameters:
     ///   - state: new state after reduce
     ///   - oldState: previous state or nil when initial value is provided

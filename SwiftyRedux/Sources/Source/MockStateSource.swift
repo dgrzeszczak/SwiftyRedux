@@ -1,5 +1,5 @@
 //
-//  MockStateSubject.swift
+//  MockStateSource.swift
 //  SwiftyRedux
 //
 //  Created by Dariusz Grzeszczak on 10/12/2019.
@@ -9,13 +9,13 @@
 import Foundation
 
 /**
- Helper StateSubject that may be used for testing objects that are based on state subjects
+ Helper StateSource that may be used for testing objects that are based on state sources
 
  #Example
      func testViewModel() {
 
          var state = ApplicationState()
-         let mock = MockStateSubject(state: state)
+         let mock = MockStateSource(state: state)
          let viewModel = HomeViewModel(with: mock.any)
 
          XCTAssert(viewModel.isLogged == false)
@@ -26,29 +26,29 @@ import Foundation
          XCTAssert(viewModel.isLogged == true)
      }
  */
-public final class MockStateSubject<State>: StateSubject {
+public final class MockStateSource<State>: StateSource {
 
     /// Current state value
     public private(set) var state: State? {
         willSet {
-            subject.notifyStateWillChange(oldState: state!)
+            source.notifyStateWillChange(oldState: state!)
         }
 
         didSet {
-            subject.notifyStateDidChange(state: state!, oldState: oldValue!)
+            source.notifyStateDidChange(state: state!, oldState: oldValue!)
         }
     }
 
-    private let subject = StoreSubject<State>()
+    private let source = StoreSource<State>()
 
-    /// Initializes subject with the state
+    /// Initializes source with the state
     /// - Parameter state: initial state
     public init(state: State) {
 
         self.state = state
     }
 
-    /// Updates the state in the subject
+    /// Updates the state in the source
     /// - Parameter state: new state
     public func updateState(state: State) {
         self.state = state
@@ -57,7 +57,7 @@ public final class MockStateSubject<State>: StateSubject {
     /// Adds state observer
     /// - Parameter observer: observer to be notified on state changes
     public func add<Observer>(observer: Observer) where Observer: StateObserver {
-        if let observer = subject.add(observer: observer) { // new subcriber added with success
+        if let observer = source.add(observer: observer) { // new subcriber added with success
             observer.didChange(state: state!, oldState: nil)
         }
     }
@@ -65,6 +65,6 @@ public final class MockStateSubject<State>: StateSubject {
     /// Removes state observer
     /// - Parameter observer: observer to remove
     public func remove<Observer>(observer: Observer) where Observer: StateObserver {
-        subject.remove(observer: observer)
+        source.remove(observer: observer)
     }
 }

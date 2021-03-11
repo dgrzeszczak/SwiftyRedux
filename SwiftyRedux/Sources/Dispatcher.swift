@@ -16,6 +16,12 @@ public protocol Dispatcher {
     func dispatch(action: StoreAction)
 }
 
+extension Dispatcher {
+    public subscript (_ action: @escaping @autoclosure () -> StoreAction) -> () -> Void {
+        { dispatch(action: action()) }
+    }
+}
+
 /// Gives the option to dishpatch actions
 @available(*, deprecated, renamed: "Dispatcher")
 public typealias StoreActionDispatcher = Dispatcher
