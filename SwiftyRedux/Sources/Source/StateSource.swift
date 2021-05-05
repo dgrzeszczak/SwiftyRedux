@@ -23,97 +23,95 @@ public typealias MockStateSubject = MockStateSource
 #if swift(>=5.1) && canImport(Combine)
 import Combine
 
-public typealias StateSourced<State> = AnyStateSource<State>.Wrapper
+//public typealias StateSourced<State> = AnyStateSource<State>.Sourced
 /// Type erased StateSource
 public class AnyStateSource<State>: StateSource {
 
+    private let source: Source
     /// Current state value
-    @Wrapper public var state: State? //{ _state() }
+    @Wrapped public var state: State? //{ _state() }
 
     /// Adds state observer
     /// - Parameter observer: observer to be notified on state changes
     public func add<Observer>(observer: Observer) where Observer : StateObserver {
-        _state.add(observer: observer)
+        source.add(observer: observer)
     }
 
     /// Removes state observer
     /// - Parameter observer: observer to remove
     public func remove<Observer>(observer: Observer) where Observer : StateObserver {
-        _state.remove(observer: observer)
+        source.remove(observer: observer)
     }
 
     /// Initializes erased type value
     /// - Parameter source: source to erase type
     public init<S: StateSource>(source: S) where S.State == State {
+        self.source = source
         _state = .init(from: source)
     }
 
+    init(source: Source & AnyStateProvider) {
+        self.source = source
+        _state = .init(source: source)
+    }
+
     @propertyWrapper
-    public struct Wrapper {
+    public final class Wrapped: StateObserver {
 
         private let state: () -> State?
-        private let source: Source
 
         public var wrappedValue: State? { state() }
 
         @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-        public var projectedValue: Publisher { Publisher(source: source) }
+        public typealias Publisher = Publishers.CompactMap<CurrentValueSubject<State?, Never>, State>
 
-        func add<Observer>(observer: Observer) where Observer : StateObserver {
-            source.add(observer: observer)
-        }
-
-        func remove<Observer>(observer: Observer) where Observer : StateObserver {
-            source.remove(observer: observer)
-        }
-
-        public init(from source: AnyStateSource<State>) {
-            self.source = source
-            state = { source.state }
-        }
-
-        init<S: StateSource>(from source: S) where S.State == State {
-            self.source = source
-            state = { source.state }
+        private var anyCurrentValueSubject: Any?
+        @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+        private var currentValueSubject: CurrentValueSubject<State?, Never> {
+            anyCurrentValueSubject as! CurrentValueSubject<State?, Never>
         }
 
         @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-        public struct Publisher: Combine.Publisher {
+        public var projectedValue: Publisher { currentValueSubject.compactMap { $0 } }
 
-            public typealias Output = State
+//        init(from source: AnyStateSource<State>) {
+//            if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
+//                let subject = CurrentValueSubject<State?, Never>(nil)
+//                anyCurrentValueSubject = subject
+//                state = { subject.value }
+//                source.add(observer: self)
+//            } else {
+//                state = { source.state }
+//            }
+//        }
 
-            public typealias Failure = Never
-
-            let source: Source
-
-            public func receive<S>(subscriber: S) where S : Subscriber, Self.Failure == S.Failure, Self.Output == S.Input {
-
-                let subscription = Subscription(target: subscriber)
-                subscriber.receive(subscription: subscription)
-                source.add(observer: subscription)
+        // TODO merge those inits
+        init<S: StateSource>(from source: S) where S.State == State {
+            if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
+                let subject = CurrentValueSubject<State?, Never>(nil)
+                anyCurrentValueSubject = subject
+                state = { subject.value }
+                source.add(observer: self)
+            } else {
+                state = { source.state }
             }
+        }
 
-
-            class Subscription<Target: Subscriber>: Combine.Subscription, StateObserver where Target.Input == State {
-
-                var target: Target?
-
-                init(target:Target) {
-                    self.target = target
-                }
-
-                func request(_ demand: Subscribers.Demand) {}
-
-                func cancel() {
-                    target = nil
-                }
-
-                func didChange(state: State, oldState: State?) {
-                    _ = target?.receive(state)
-                }
-
+        init(source: Source & AnyStateProvider) {
+            if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
+                let subject = CurrentValueSubject<State?, Never>(nil)
+                anyCurrentValueSubject = subject
+                state = { subject.value }
+                source.add(observer: self)
+            } else {
+                state = { source.anyState() }
             }
+        }
 
+        public func didChange(state: State, oldState: State?) {
+            if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *) {
+                currentValueSubject.send(state)
+            }
         }
     }
 }

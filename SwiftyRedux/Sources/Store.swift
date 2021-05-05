@@ -76,7 +76,8 @@ public class Store<State: StoreState>: Dispatcher, Source {
 
 // ------
 
-protocol AnyStateProvider {
+// class is only for use === operator (may be changed if needed)
+protocol AnyStateProvider: AnyObject {
     func anyState<State>() -> State?
 }
 
